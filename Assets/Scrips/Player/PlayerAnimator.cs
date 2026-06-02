@@ -222,13 +222,13 @@ public class PlayerAnimator : MonoBehaviour
 
     private string ObtenerAnimacionIdle()
     {
+        if(playerStatusEffects != null && playerStatusEffects.EstaEnvenenado)
+        {
+            return InjuredPoisoned;
+        }
+
         if(playerHealth != null && playerHealth.EstaHerido)
         {
-            if(playerStatusEffects != null && playerStatusEffects.EstaEnvenenado)
-            {
-                return InjuredPoisoned;
-            }
-
             return Injured;
         }
 
