@@ -136,4 +136,16 @@ public class PlayerMovement : MonoBehaviour
         contadorKnockback = duracion;
         rb.linearVelocity = new Vector2(velocidadKnockbackX, fuerzaVertical);
     }
+
+    public void RebotarPorPisoton(float fuerzaRebote)
+    {
+        if(rb == null)
+        {
+            rb = GetComponent<Rigidbody2D>();
+        }
+
+        contadorKnockback = 0;
+        contadorCoyote = 0;
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, fuerzaRebote);
+    }
 }

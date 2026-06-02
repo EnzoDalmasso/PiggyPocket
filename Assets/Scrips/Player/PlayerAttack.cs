@@ -14,6 +14,18 @@ public class PlayerAttack : MonoBehaviour
     // Tiempo minimo para volver a iniciar otro combo despues de terminar.
     [SerializeField] private float tiempoEntreAtaques = 0.45f;
 
+    // Espera antes de activar la colision del primer golpe.
+    [SerializeField] private float demoraHitboxAtaque1 = 0.12f;
+
+    // Espera antes de activar la colision del segundo golpe.
+    [SerializeField] private float demoraHitboxAtaque2 = 0.14f;
+
+    // Tiempo real durante el que el primer golpe puede hacer dano.
+    [SerializeField] private float duracionHitboxAtaque1 = 0.12f;
+
+    // Tiempo real durante el que el segundo golpe puede hacer dano.
+    [SerializeField] private float duracionHitboxAtaque2 = 0.14f;
+
     // Zona de colision que detecta enemigos durante el ataque.
     [SerializeField] private PlayerAttackHitbox attackHitbox;
 
@@ -29,8 +41,17 @@ public class PlayerAttack : MonoBehaviour
     // Contador interno del cooldown entre ataques.
     private float contadorCooldown;
 
+    // Contador para esperar al frame correcto del golpe antes de activar el hitbox.
+    private float contadorDemoraHitbox;
+
+    // Contador para apagar el hitbox despues de la ventana real de dano.
+    private float contadorDuracionHitbox;
+
     // Guarda si el jugador pidio encadenar el segundo golpe.
     private bool ataqueComboPendiente;
+
+    // Indica si la zona de dano ya esta activa dentro del ataque actual.
+    private bool hitboxActiva;
 
     // Indica si el jugador esta en medio de un ataque.
     public bool EstaAtacando { get; private set; }
@@ -87,6 +108,8 @@ public class PlayerAttack : MonoBehaviour
             return;
         }
 
+        ActualizarVentanaHitbox();
+
         contadorDuracionAtaque -= Time.deltaTime;
 
         if(contadorDuracionAtaque <= 0)
@@ -131,19 +154,71 @@ public class PlayerAttack : MonoBehaviour
         AtaqueIniciadoEsteFrame = true;
         NumeroAtaqueActual = numeroAtaque;
         contadorDuracionAtaque = numeroAtaque == 1 ? duracionAtaque1 : duracionAtaque2;
+        contadorDemoraHitbox = numeroAtaque == 1 ? demoraHitboxAtaque1 : demoraHitboxAtaque2;
+        contadorDuracionHitbox = numeroAtaque == 1 ? duracionHitboxAtaque1 : duracionHitboxAtaque2;
+        hitboxActiva = false;
 
         if(attackHitbox != null)
         {
-            attackHitbox.Activar(numeroAtaque);
+            attackHitbox.Desactivar();
+        }
+
+        if(contadorDemoraHitbox <= 0)
+        {
+            ActivarHitbox();
         }
     }
 
-    private void FinalizarAtaque()
+    private void ActualizarVentanaHitbox()
+    {
+        if(hitboxActiva)
+        {
+            contadorDuracionHitbox -= Time.deltaTime;
+
+            if(contadorDuracionHitbox <= 0)
+            {
+                DesactivarHitbox();
+            }
+
+            return;
+        }
+
+        if(contadorDemoraHitbox > 0)
+        {
+            contadorDemoraHitbox -= Time.deltaTime;
+        }
+
+        if(contadorDemoraHitbox <= 0 && contadorDuracionHitbox > 0)
+        {
+            ActivarHitbox();
+        }
+    }
+
+    private void ActivarHitbox()
+    {
+        if(attackHitbox == null || hitboxActiva)
+        {
+            return;
+        }
+
+        hitboxActiva = true;
+        attackHitbox.Activar(NumeroAtaqueActual);
+    }
+
+    private void DesactivarHitbox()
     {
         if(attackHitbox != null)
         {
             attackHitbox.Desactivar();
         }
+
+        hitboxActiva = false;
+        contadorDuracionHitbox = 0;
+    }
+
+    private void FinalizarAtaque()
+    {
+        DesactivarHitbox();
 
         EstaAtacando = false;
         NumeroAtaqueActual = 0;
@@ -153,22 +228,17 @@ public class PlayerAttack : MonoBehaviour
 
     private void CancelarAtaque()
     {
-        if(attackHitbox != null)
-        {
-            attackHitbox.Desactivar();
-        }
+        DesactivarHitbox();
 
         EstaAtacando = false;
         NumeroAtaqueActual = 0;
         ataqueComboPendiente = false;
         contadorDuracionAtaque = 0;
+        contadorDemoraHitbox = 0;
     }
 
     void OnDisable()
     {
-        if(attackHitbox != null)
-        {
-            attackHitbox.Desactivar();
-        }
+        DesactivarHitbox();
     }
 }

@@ -116,7 +116,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: -0.12109563, y: -0.045295298}
-  m_Radius: 0.12419972
+  m_Radius: 0.17
 --- !u!114 &3585019604071764995
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -388,6 +388,10 @@ MonoBehaviour:
   duracionAtaque1: 0.35
   duracionAtaque2: 0.4
   tiempoEntreAtaques: 0.45
+  demoraHitboxAtaque1: 0.12
+  demoraHitboxAtaque2: 0.14
+  duracionHitboxAtaque1: 0.12
+  duracionHitboxAtaque2: 0.14
   attackHitbox: {fileID: 0}
 --- !u!114 &9216354182053740197
 MonoBehaviour:

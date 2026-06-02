@@ -32,6 +32,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     public int VidaActual => vidaActual;
     public int VidaMaxima => vidaMaxima;
+    public bool VidaCompleta => vidaActual >= vidaMaxima;
     public bool EstaHerido => vidaActual <= vidaHerida && vidaActual > 0;
     public bool EstaMuerto { get; private set; }
     public bool EstaRecibiendoDano => contadorHit > 0 && !EstaMuerto;
@@ -75,6 +76,19 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         contadorInvulnerabilidad = duracionInvulnerabilidad;
 
         AplicarKnockback(puntoGolpe);
+    }
+
+    public bool Curar(int cantidad)
+    {
+        if(EstaMuerto || cantidad <= 0 || VidaCompleta)
+        {
+            return false;
+        }
+
+        vidaActual = Mathf.Min(vidaActual + cantidad, vidaMaxima);
+        Debug.Log(name + " recupero " + cantidad + " de vida. Vida: " + vidaActual, this);
+
+        return true;
     }
 
     private void AplicarKnockback(Vector2 puntoGolpe)
