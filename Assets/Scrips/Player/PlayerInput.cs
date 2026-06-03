@@ -17,8 +17,11 @@ public class PlayerInput : MonoBehaviour
     void Update()
     {
         // El input se lee en Update porque depende de cada frame del juego.
-        MovimientoHorizontal = Input.GetAxisRaw("Horizontal");
-        SaltoPresionado = Input.GetButtonDown("Jump");
-        AtaquePresionado = Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.J);
+        float movimientoTeclado = Input.GetAxisRaw("Horizontal");
+        float movimientoMobile = MobileInputState.MovimientoHorizontal;
+
+        MovimientoHorizontal = Mathf.Clamp(movimientoTeclado + movimientoMobile, -1f, 1f);
+        SaltoPresionado = Input.GetButtonDown("Jump") || MobileInputState.ConsumirSalto();
+        AtaquePresionado = Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.J) || MobileInputState.ConsumirAtaque();
     }
 }

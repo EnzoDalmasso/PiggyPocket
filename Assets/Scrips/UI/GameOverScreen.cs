@@ -22,6 +22,7 @@ public class GameOverScreen : MonoBehaviour
     [SerializeField] private TMP_Text textoTitulo;
     [SerializeField] private TMP_Text textoDetalle;
     [SerializeField] private Button botonReintentar;
+    [SerializeField] private Button botonMenuPrincipal;
 
     [Header("Contenido")]
     [SerializeField] private string titulo = "Derrota";
@@ -30,6 +31,8 @@ public class GameOverScreen : MonoBehaviour
     [Header("Comportamiento")]
     [SerializeField] private float delayMostrar = 1.2f;
     [SerializeField] private bool pausarJuegoAlMostrar = true;
+    [SerializeField] private string nombreEscenaMenuPrincipal = "MainMenu";
+    [SerializeField] private string rutaEscenaMenuPrincipalEditor = "Assets/Scenes/MainMenu.unity";
 
     private bool visible;
     private bool eventosSuscritos;
@@ -141,6 +144,21 @@ public class GameOverScreen : MonoBehaviour
         }
     }
 
+    public void CargarMenuPrincipal()
+    {
+        RestaurarTiempo();
+
+#if UNITY_EDITOR
+        if(!string.IsNullOrEmpty(rutaEscenaMenuPrincipalEditor))
+        {
+            EditorSceneManager.LoadScene(rutaEscenaMenuPrincipalEditor);
+            return;
+        }
+#endif
+
+        SceneManager.LoadScene(nombreEscenaMenuPrincipal);
+    }
+
     private IEnumerator MostrarConDelay()
     {
         if(delayMostrar > 0f)
@@ -189,6 +207,13 @@ public class GameOverScreen : MonoBehaviour
         {
             botonReintentar = BuscarComponente<Button>(CardPath + "/BotonReintentar");
         }
+
+        if(botonMenuPrincipal == null)
+        {
+            botonMenuPrincipal = BuscarComponente<Button>(CardPath + "/BotonMenuPrincipal");
+        }
+
+        AsegurarBotonesPorDefecto();
     }
 
     private void CrearPanelPorDefecto()
@@ -204,26 +229,58 @@ public class GameOverScreen : MonoBehaviour
 
         canvasGroup = overlayGO.AddComponent<CanvasGroup>();
 
-        GameObject cardGO = CrearCard("GameOverCard", overlay, new Vector2(520f, 300f));
+        GameObject cardGO = CrearCard("GameOverCard", overlay, new Vector2(560f, 340f));
         RectTransform card = cardGO.GetComponent<RectTransform>();
 
-        textoTitulo = CrearTexto("Titulo", card, titulo, 46f, new Vector2(0f, 84f), new Vector2(460f, 64f));
-        textoDetalle = CrearTexto("Detalle", card, detalle, 26f, new Vector2(0f, 18f), new Vector2(430f, 54f));
-        botonReintentar = CrearBoton("BotonReintentar", card, "Reintentar", new Vector2(0f, -88f), new Vector2(240f, 54f));
+        textoTitulo = CrearTexto("Titulo", card, titulo, 46f, new Vector2(0f, 104f), new Vector2(500f, 64f));
+        textoDetalle = CrearTexto("Detalle", card, detalle, 26f, new Vector2(0f, 28f), new Vector2(470f, 54f));
+        botonReintentar = CrearBoton("BotonReintentar", card, "Reintentar", new Vector2(-132f, -98f), new Vector2(220f, 54f));
+        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Menu principal", new Vector2(132f, -98f), new Vector2(220f, 54f));
 
         panelDerrota = overlayGO;
         overlayGO.SetActive(false);
     }
 
-    private void ConfigurarBotones()
+    private void AsegurarBotonesPorDefecto()
     {
-        if(botonReintentar == null)
+        if(botonReintentar != null)
+        {
+            ActualizarTextoBoton(botonReintentar, "Reintentar");
+        }
+
+        Transform card = transform.Find(CardPath);
+
+        if(card == null || botonMenuPrincipal != null)
         {
             return;
         }
 
-        botonReintentar.onClick.RemoveListener(ReiniciarNivel);
-        botonReintentar.onClick.AddListener(ReiniciarNivel);
+        RectTransform botonReintentarRect = botonReintentar != null ? botonReintentar.GetComponent<RectTransform>() : null;
+
+        if(botonReintentarRect != null)
+        {
+            botonReintentarRect.anchoredPosition = new Vector2(-132f, -98f);
+            botonReintentarRect.sizeDelta = new Vector2(220f, 54f);
+        }
+
+        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Menu principal", new Vector2(132f, -98f), new Vector2(220f, 54f), botonReintentar);
+    }
+
+    private void ConfigurarBotones()
+    {
+        ConfigurarBoton(botonReintentar, ReiniciarNivel);
+        ConfigurarBoton(botonMenuPrincipal, CargarMenuPrincipal);
+    }
+
+    private void ConfigurarBoton(Button boton, UnityEngine.Events.UnityAction accion)
+    {
+        if(boton == null)
+        {
+            return;
+        }
+
+        boton.onClick.RemoveListener(accion);
+        boton.onClick.AddListener(accion);
     }
 
     private void SuscribirEventos()
@@ -378,6 +435,36 @@ public class GameOverScreen : MonoBehaviour
         label.raycastTarget = false;
 
         return boton;
+    }
+
+    private static Button CrearBoton(string nombre, Transform padre, string contenido, Vector2 posicion, Vector2 tamano, Button botonBase)
+    {
+        Button boton = CrearBoton(nombre, padre, contenido, posicion, tamano);
+
+        if(botonBase != null)
+        {
+            boton.colors = botonBase.colors;
+
+            Image imagen = boton.targetGraphic as Image;
+            Image imagenBase = botonBase.targetGraphic as Image;
+
+            if(imagen != null && imagenBase != null)
+            {
+                imagen.color = imagenBase.color;
+            }
+        }
+
+        return boton;
+    }
+
+    private static void ActualizarTextoBoton(Button boton, string contenido)
+    {
+        TMP_Text texto = boton != null ? boton.GetComponentInChildren<TMP_Text>() : null;
+
+        if(texto != null)
+        {
+            texto.text = contenido;
+        }
     }
 
     private static void StretchCompleto(RectTransform rectTransform)

@@ -21,6 +21,7 @@ public class LevelVictoryScreen : MonoBehaviour
     [SerializeField] private TMP_Text textoMonedas;
     [SerializeField] private TMP_Text textoDetalle;
     [SerializeField] private Button botonReiniciar;
+    [SerializeField] private Button botonMenuPrincipal;
 
     [Header("Contenido")]
     [SerializeField] private string titulo = "Nivel completado";
@@ -29,6 +30,8 @@ public class LevelVictoryScreen : MonoBehaviour
 
     [Header("Comportamiento")]
     [SerializeField] private bool pausarJuegoAlGanar = true;
+    [SerializeField] private string nombreEscenaMenuPrincipal = "MainMenu";
+    [SerializeField] private string rutaEscenaMenuPrincipalEditor = "Assets/Scenes/MainMenu.unity";
 
     private bool visible;
     private float timeScaleAnterior = 1f;
@@ -118,6 +121,21 @@ public class LevelVictoryScreen : MonoBehaviour
         }
     }
 
+    public void CargarMenuPrincipal()
+    {
+        RestaurarTiempo();
+
+#if UNITY_EDITOR
+        if(!string.IsNullOrEmpty(rutaEscenaMenuPrincipalEditor))
+        {
+            EditorSceneManager.LoadScene(rutaEscenaMenuPrincipalEditor);
+            return;
+        }
+#endif
+
+        SceneManager.LoadScene(nombreEscenaMenuPrincipal);
+    }
+
     private void AsegurarReferencias()
     {
         if(panelVictoria == null)
@@ -151,21 +169,59 @@ public class LevelVictoryScreen : MonoBehaviour
             botonReiniciar = BuscarComponente<Button>(CardPath + "/BotonReiniciar");
         }
 
+        if(botonMenuPrincipal == null)
+        {
+            botonMenuPrincipal = BuscarComponente<Button>(CardPath + "/BotonMenuPrincipal");
+        }
+
+        AsegurarBotonesPorDefecto();
+
         if(panelVictoria == null)
         {
             Debug.LogWarning("LevelVictoryScreen no encontro VictoryOverlay dentro de HUDCanvas.", this);
         }
     }
 
-    private void ConfigurarBotones()
+    private void AsegurarBotonesPorDefecto()
     {
-        if(botonReiniciar == null)
+        if(botonReiniciar != null)
+        {
+            ActualizarTextoBoton(botonReiniciar, "Reintentar");
+        }
+
+        Transform card = transform.Find(CardPath);
+
+        if(card == null || botonMenuPrincipal != null)
         {
             return;
         }
 
-        botonReiniciar.onClick.RemoveListener(ReiniciarNivel);
-        botonReiniciar.onClick.AddListener(ReiniciarNivel);
+        RectTransform botonReiniciarRect = botonReiniciar != null ? botonReiniciar.GetComponent<RectTransform>() : null;
+
+        if(botonReiniciarRect != null)
+        {
+            botonReiniciarRect.anchoredPosition = new Vector2(-132f, -116f);
+            botonReiniciarRect.sizeDelta = new Vector2(220f, 54f);
+        }
+
+        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Menu principal", new Vector2(132f, -116f), new Vector2(220f, 54f), botonReiniciar);
+    }
+
+    private void ConfigurarBotones()
+    {
+        ConfigurarBoton(botonReiniciar, ReiniciarNivel);
+        ConfigurarBoton(botonMenuPrincipal, CargarMenuPrincipal);
+    }
+
+    private void ConfigurarBoton(Button boton, UnityEngine.Events.UnityAction accion)
+    {
+        if(boton == null)
+        {
+            return;
+        }
+
+        boton.onClick.RemoveListener(accion);
+        boton.onClick.AddListener(accion);
     }
 
     private void OcultarInstantaneo()
@@ -200,6 +256,62 @@ public class LevelVictoryScreen : MonoBehaviour
     {
         Transform encontrado = transform.Find(ruta);
         return encontrado != null ? encontrado.GetComponent<T>() : null;
+    }
+
+    private static Button CrearBoton(string nombre, Transform padre, string contenido, Vector2 posicion, Vector2 tamano, Button botonBase)
+    {
+        GameObject buttonGO = new GameObject(nombre, typeof(RectTransform));
+        buttonGO.layer = LayerMask.NameToLayer("UI");
+        buttonGO.transform.SetParent(padre, false);
+
+        RectTransform rectTransform = buttonGO.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = posicion;
+        rectTransform.sizeDelta = tamano;
+
+        Image image = buttonGO.AddComponent<Image>();
+        Image imagenBase = botonBase != null ? botonBase.targetGraphic as Image : null;
+        image.color = imagenBase != null ? imagenBase.color : new Color(0.93f, 0.55f, 0.18f, 1f);
+
+        Button boton = buttonGO.AddComponent<Button>();
+        boton.targetGraphic = image;
+
+        if(botonBase != null)
+        {
+            boton.colors = botonBase.colors;
+        }
+
+        GameObject labelGO = new GameObject("Texto", typeof(RectTransform));
+        labelGO.layer = LayerMask.NameToLayer("UI");
+        labelGO.transform.SetParent(buttonGO.transform, false);
+
+        RectTransform labelRect = labelGO.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
+
+        TMP_Text label = labelGO.AddComponent<TextMeshProUGUI>();
+        label.text = contenido;
+        label.fontSize = 24f;
+        label.color = Color.white;
+        label.alignment = TextAlignmentOptions.Center;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.raycastTarget = false;
+
+        return boton;
+    }
+
+    private static void ActualizarTextoBoton(Button boton, string contenido)
+    {
+        TMP_Text texto = boton != null ? boton.GetComponentInChildren<TMP_Text>() : null;
+
+        if(texto != null)
+        {
+            texto.text = contenido;
+        }
     }
 
     private static void AsegurarEventSystem()

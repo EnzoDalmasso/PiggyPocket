@@ -8,6 +8,12 @@ public static class HUDCanvasPrefabBuilder
 {
     private const string HUDCanvasPath = "Assets/Prefabs/UI/HUDCanvas.prefab";
     private const string RebuildFlagPath = "ProjectSettings/PiggyPocket_RebuildHUDCanvas.flag";
+    private const string SpriteLeftPath = "Assets/Sprites/Mobile/Sprites/Style C/Default/direction_left.png";
+    private const string SpriteRightPath = "Assets/Sprites/Mobile/Sprites/Style C/Default/direction_right.png";
+    private const string SpriteJumpButtonPath = "Assets/Sprites/Mobile/Sprites/Style C/Default/button_circle.png";
+    private const string SpriteAttackButtonPath = "Assets/Sprites/Mobile/Sprites/Style C/Default/button_diamond.png";
+    private const string SpriteJumpIconPath = "Assets/Sprites/Mobile/Sprites/Icons/Default/icon_jump.png";
+    private const string SpriteAttackIconPath = "Assets/Sprites/Mobile/Sprites/Icons/Default/icon_sword.png";
 
     [InitializeOnLoadMethod]
     private static void RebuildHUDCanvasIfRequested()
@@ -39,13 +45,14 @@ public static class HUDCanvasPrefabBuilder
             RebuildVictoryPanel(hudCanvas);
             RebuildGameOverPanel(hudCanvas);
             RebuildPausePanel(hudCanvas);
+            RebuildMobileControls(hudCanvas);
 
             PrefabUtility.SaveAsPrefabAsset(hudCanvas, HUDCanvasPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
             Selection.activeObject = AssetDatabase.LoadAssetAtPath<GameObject>(HUDCanvasPath);
-            Debug.Log("HUDCanvas actualizado con VictoryOverlay, PauseOverlay y GameOverOverlay en " + HUDCanvasPath);
+            Debug.Log("HUDCanvas actualizado con menus y controles mobile en " + HUDCanvasPath);
         }
         finally
         {
@@ -84,16 +91,17 @@ public static class HUDCanvasPrefabBuilder
         card.anchorMax = new Vector2(0.5f, 0.5f);
         card.pivot = new Vector2(0.5f, 0.5f);
         card.anchoredPosition = Vector2.zero;
-        card.sizeDelta = new Vector2(560f, 320f);
+        card.sizeDelta = new Vector2(600f, 360f);
 
         Image cardImage = cardGO.AddComponent<Image>();
         cardImage.color = new Color(0.96f, 0.91f, 0.72f, 1f);
         cardImage.raycastTarget = true;
 
-        TMP_Text titleText = CreateText("Titulo", card, "Nivel completado", 44f, new Vector2(0f, 92f), new Vector2(500f, 64f));
-        TMP_Text coinsText = CreateText("Monedas", card, "Monedas recolectadas: 0", 30f, new Vector2(0f, 22f), new Vector2(500f, 48f));
-        TMP_Text detailText = CreateText("Detalle", card, "Llegaste a la meta final.", 22f, new Vector2(0f, -34f), new Vector2(500f, 44f));
-        Button restartButton = CreateButton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -112f), new Vector2(220f, 54f));
+        TMP_Text titleText = CreateText("Titulo", card, "Nivel completado", 44f, new Vector2(0f, 112f), new Vector2(540f, 64f));
+        TMP_Text coinsText = CreateText("Monedas", card, "Monedas recolectadas: 0", 30f, new Vector2(0f, 34f), new Vector2(540f, 48f));
+        TMP_Text detailText = CreateText("Detalle", card, "Llegaste a la meta final.", 22f, new Vector2(0f, -24f), new Vector2(540f, 44f));
+        Button restartButton = CreateButton("BotonReiniciar", card, "Reintentar", new Vector2(-132f, -116f), new Vector2(220f, 54f));
+        Button mainMenuButton = CreateButton("BotonMenuPrincipal", card, "Menu principal", new Vector2(132f, -116f), new Vector2(220f, 54f));
 
         LevelVictoryScreen victoryScreen = hudCanvas.AddComponent<LevelVictoryScreen>();
         SerializedObject serializedScreen = new SerializedObject(victoryScreen);
@@ -103,13 +111,83 @@ public static class HUDCanvasPrefabBuilder
         serializedScreen.FindProperty("textoMonedas").objectReferenceValue = coinsText;
         serializedScreen.FindProperty("textoDetalle").objectReferenceValue = detailText;
         serializedScreen.FindProperty("botonReiniciar").objectReferenceValue = restartButton;
+        serializedScreen.FindProperty("botonMenuPrincipal").objectReferenceValue = mainMenuButton;
         serializedScreen.FindProperty("titulo").stringValue = "Nivel completado";
         serializedScreen.FindProperty("formatoMonedas").stringValue = "Monedas recolectadas: {0}";
         serializedScreen.FindProperty("detalle").stringValue = "Llegaste a la meta final.";
         serializedScreen.FindProperty("pausarJuegoAlGanar").boolValue = true;
+        serializedScreen.FindProperty("nombreEscenaMenuPrincipal").stringValue = "MainMenu";
+        serializedScreen.FindProperty("rutaEscenaMenuPrincipalEditor").stringValue = "Assets/Scenes/MainMenu.unity";
         serializedScreen.ApplyModifiedPropertiesWithoutUndo();
 
         overlayGO.SetActive(false);
+    }
+
+    private static void RebuildMobileControls(GameObject hudCanvas)
+    {
+        Transform existingControls = hudCanvas.transform.Find("MobileControls");
+
+        if(existingControls != null)
+        {
+            Object.DestroyImmediate(existingControls.gameObject);
+        }
+
+        foreach(MobileControlsUI existingControlsUI in hudCanvas.GetComponents<MobileControlsUI>())
+        {
+            Object.DestroyImmediate(existingControlsUI);
+        }
+
+        Sprite leftSprite = LoadSprite(SpriteLeftPath);
+        Sprite rightSprite = LoadSprite(SpriteRightPath);
+        Sprite jumpButtonSprite = LoadSprite(SpriteJumpButtonPath);
+        Sprite attackButtonSprite = LoadSprite(SpriteAttackButtonPath);
+        Sprite jumpIconSprite = LoadSprite(SpriteJumpIconPath);
+        Sprite attackIconSprite = LoadSprite(SpriteAttackIconPath);
+
+        GameObject controlsGO = CreateUIObject("MobileControls", hudCanvas.transform);
+        RectTransform controls = controlsGO.GetComponent<RectTransform>();
+        StretchFull(controls);
+        controls.SetSiblingIndex(Mathf.Min(1, hudCanvas.transform.childCount - 1));
+
+        GameObject movementGO = CreateUIObject("Movimiento", controlsGO.transform);
+        RectTransform movement = movementGO.GetComponent<RectTransform>();
+        movement.anchorMin = Vector2.zero;
+        movement.anchorMax = Vector2.zero;
+        movement.pivot = Vector2.zero;
+        movement.anchoredPosition = new Vector2(42f, 38f);
+        movement.sizeDelta = new Vector2(236f, 116f);
+
+        CreateMobileButton("BotonIzquierda", movementGO.transform, MobileInputAction.Izquierda, leftSprite, null, new Vector2(52f, 52f), new Vector2(104f, 104f), Vector2.zero);
+        CreateMobileButton("BotonDerecha", movementGO.transform, MobileInputAction.Derecha, rightSprite, null, new Vector2(168f, 52f), new Vector2(104f, 104f), Vector2.zero);
+
+        GameObject actionsGO = CreateUIObject("Acciones", controlsGO.transform);
+        RectTransform actions = actionsGO.GetComponent<RectTransform>();
+        actions.anchorMin = new Vector2(1f, 0f);
+        actions.anchorMax = new Vector2(1f, 0f);
+        actions.pivot = new Vector2(1f, 0f);
+        actions.anchoredPosition = new Vector2(-42f, 38f);
+        actions.sizeDelta = new Vector2(278f, 178f);
+
+        CreateMobileButton("BotonAtaque", actionsGO.transform, MobileInputAction.Ataque, attackButtonSprite, attackIconSprite, new Vector2(-56f, 56f), new Vector2(112f, 112f), new Vector2(54f, 54f));
+        CreateMobileButton("BotonSalto", actionsGO.transform, MobileInputAction.Salto, jumpButtonSprite, jumpIconSprite, new Vector2(-170f, 104f), new Vector2(112f, 112f), new Vector2(54f, 54f));
+
+        MobileControlsUI controlsUI = hudCanvas.AddComponent<MobileControlsUI>();
+        SerializedObject serializedControls = new SerializedObject(controlsUI);
+        serializedControls.FindProperty("mostrarEnEditor").boolValue = true;
+        serializedControls.FindProperty("mostrarEnStandalone").boolValue = false;
+        serializedControls.FindProperty("mostrarEnWebGLConTouch").boolValue = true;
+        serializedControls.FindProperty("spriteIzquierda").objectReferenceValue = leftSprite;
+        serializedControls.FindProperty("spriteDerecha").objectReferenceValue = rightSprite;
+        serializedControls.FindProperty("spriteBotonSalto").objectReferenceValue = jumpButtonSprite;
+        serializedControls.FindProperty("spriteBotonAtaque").objectReferenceValue = attackButtonSprite;
+        serializedControls.FindProperty("spriteIconoSalto").objectReferenceValue = jumpIconSprite;
+        serializedControls.FindProperty("spriteIconoAtaque").objectReferenceValue = attackIconSprite;
+        serializedControls.FindProperty("tamanoBotonMovimiento").vector2Value = new Vector2(104f, 104f);
+        serializedControls.FindProperty("tamanoBotonAccion").vector2Value = new Vector2(112f, 112f);
+        serializedControls.FindProperty("tamanoIconoAccion").vector2Value = new Vector2(54f, 54f);
+        serializedControls.FindProperty("margenHorizontal").floatValue = 42f;
+        serializedControls.FindProperty("margenVertical").floatValue = 38f;
+        serializedControls.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static void RebuildPausePanel(GameObject hudCanvas)
@@ -208,12 +286,13 @@ public static class HUDCanvasPrefabBuilder
 
         CanvasGroup canvasGroup = overlayGO.AddComponent<CanvasGroup>();
 
-        GameObject cardGO = CreateCard("GameOverCard", overlay, new Vector2(520f, 300f));
+        GameObject cardGO = CreateCard("GameOverCard", overlay, new Vector2(560f, 340f));
         RectTransform card = cardGO.GetComponent<RectTransform>();
 
-        TMP_Text titleText = CreateText("Titulo", card, "Derrota", 46f, new Vector2(0f, 84f), new Vector2(460f, 64f));
-        TMP_Text detailText = CreateText("Detalle", card, "Intentalo otra vez.", 26f, new Vector2(0f, 18f), new Vector2(430f, 54f));
-        Button retryButton = CreateButton("BotonReintentar", card, "Reintentar", new Vector2(0f, -88f), new Vector2(240f, 54f));
+        TMP_Text titleText = CreateText("Titulo", card, "Derrota", 46f, new Vector2(0f, 104f), new Vector2(500f, 64f));
+        TMP_Text detailText = CreateText("Detalle", card, "Intentalo otra vez.", 26f, new Vector2(0f, 28f), new Vector2(470f, 54f));
+        Button retryButton = CreateButton("BotonReintentar", card, "Reintentar", new Vector2(-132f, -98f), new Vector2(220f, 54f));
+        Button mainMenuButton = CreateButton("BotonMenuPrincipal", card, "Menu principal", new Vector2(132f, -98f), new Vector2(220f, 54f));
 
         GameOverScreen gameOverScreen = hudCanvas.AddComponent<GameOverScreen>();
         SerializedObject serializedScreen = new SerializedObject(gameOverScreen);
@@ -222,10 +301,13 @@ public static class HUDCanvasPrefabBuilder
         serializedScreen.FindProperty("textoTitulo").objectReferenceValue = titleText;
         serializedScreen.FindProperty("textoDetalle").objectReferenceValue = detailText;
         serializedScreen.FindProperty("botonReintentar").objectReferenceValue = retryButton;
+        serializedScreen.FindProperty("botonMenuPrincipal").objectReferenceValue = mainMenuButton;
         serializedScreen.FindProperty("titulo").stringValue = "Derrota";
         serializedScreen.FindProperty("detalle").stringValue = "Intentalo otra vez.";
         serializedScreen.FindProperty("delayMostrar").floatValue = 1.2f;
         serializedScreen.FindProperty("pausarJuegoAlMostrar").boolValue = true;
+        serializedScreen.FindProperty("nombreEscenaMenuPrincipal").stringValue = "MainMenu";
+        serializedScreen.FindProperty("rutaEscenaMenuPrincipalEditor").stringValue = "Assets/Scenes/MainMenu.unity";
         serializedScreen.ApplyModifiedPropertiesWithoutUndo();
 
         overlayGO.SetActive(false);
@@ -416,11 +498,72 @@ public static class HUDCanvasPrefabBuilder
         return toggle;
     }
 
+    private static void CreateMobileButton(
+        string name,
+        Transform parent,
+        MobileInputAction action,
+        Sprite backgroundSprite,
+        Sprite iconSprite,
+        Vector2 position,
+        Vector2 size,
+        Vector2 iconSize)
+    {
+        GameObject buttonGO = CreateUIObject(name, parent);
+        RectTransform rectTransform = buttonGO.GetComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.zero;
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = position;
+        rectTransform.sizeDelta = size;
+
+        Image background = buttonGO.AddComponent<Image>();
+        background.sprite = backgroundSprite;
+        background.preserveAspect = true;
+        background.raycastTarget = true;
+        background.color = new Color(1f, 1f, 1f, 0.72f);
+
+        MobileInputButton inputButton = buttonGO.AddComponent<MobileInputButton>();
+        SerializedObject serializedButton = new SerializedObject(inputButton);
+        serializedButton.FindProperty("accion").intValue = (int)action;
+        serializedButton.FindProperty("imagenObjetivo").objectReferenceValue = background;
+        serializedButton.ApplyModifiedPropertiesWithoutUndo();
+
+        if(iconSprite == null)
+        {
+            return;
+        }
+
+        GameObject iconGO = CreateUIObject("Icono", buttonGO.transform);
+        RectTransform icon = iconGO.GetComponent<RectTransform>();
+        icon.anchorMin = new Vector2(0.5f, 0.5f);
+        icon.anchorMax = new Vector2(0.5f, 0.5f);
+        icon.pivot = new Vector2(0.5f, 0.5f);
+        icon.anchoredPosition = Vector2.zero;
+        icon.sizeDelta = iconSize;
+
+        Image iconImage = iconGO.AddComponent<Image>();
+        iconImage.sprite = iconSprite;
+        iconImage.preserveAspect = true;
+        iconImage.raycastTarget = false;
+    }
+
     private static void StretchFull(RectTransform rectTransform)
     {
         rectTransform.anchorMin = Vector2.zero;
         rectTransform.anchorMax = Vector2.one;
         rectTransform.offsetMin = Vector2.zero;
         rectTransform.offsetMax = Vector2.zero;
+    }
+
+    private static Sprite LoadSprite(string path)
+    {
+        Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+
+        if(sprite == null)
+        {
+            Debug.LogWarning("No se encontro el sprite de UI mobile: " + path);
+        }
+
+        return sprite;
     }
 }
