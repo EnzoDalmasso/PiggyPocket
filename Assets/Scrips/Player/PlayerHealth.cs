@@ -32,6 +32,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     private float contadorInvulnerabilidad;
 
     public event Action<int, int> VidaCambiada;
+    public event Action Muerte;
 
     public int VidaActual => vidaActual;
     public int VidaMaxima => vidaMaxima;
@@ -112,6 +113,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         EstaMuerto = true;
         contadorHit = 0;
         contadorInvulnerabilidad = 0;
+        Muerte?.Invoke();
         Debug.Log(name + " murio.", this);
     }
 
