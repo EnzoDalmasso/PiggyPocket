@@ -151,6 +151,9 @@ MonoBehaviour:
   dropSpawner: {fileID: 8301427915122001005}
   demoraSpawnDrops: 0.02
   desactivarColisionesAlRomper: 1
+  duracionFeedbackGolpe: 0.08
+  escalaFeedbackGolpe: 1.08
+  colorFeedbackGolpe: {r: 1, g: 0.65, b: 0.35, a: 1}
 --- !u!114 &8301427915122001005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164,16 +167,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DropSpawner
   puntoSpawn: {fileID: 0}
+  modoDrop: 1
   drops:
   - prefab: {fileID: 6203104319862101000, guid: d7b2cf6f5fac48d59e9283d55414f2a7, type: 3}
     cantidad: 1
-    probabilidad: 1
+    probabilidad: 0.7
     offset: {x: 0, y: 0.28}
     usarOffsetAleatorio: 0
     rangoOffsetAleatorio: {x: 0, y: 0}
   - prefab: {fileID: 4109712763456101000, guid: d9f067b0d10a44d986df423719abf928, type: 3}
     cantidad: 3
-    probabilidad: 0.35
+    probabilidad: 0.3
     offset: {x: 0, y: 0.22}
     usarOffsetAleatorio: 1
     rangoOffsetAleatorio: {x: 0.16, y: 0.06}

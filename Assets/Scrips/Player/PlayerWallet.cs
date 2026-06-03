@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 // Guarda las monedas del Player para compras, mejoras u otros sistemas futuros.
@@ -9,6 +10,8 @@ public class PlayerWallet : MonoBehaviour
 
     public int Monedas => monedas;
 
+    public event Action<int> MonedasCambiadas;
+
     public void AgregarMonedas(int cantidad)
     {
         if(cantidad <= 0)
@@ -18,6 +21,7 @@ public class PlayerWallet : MonoBehaviour
 
         monedas += cantidad;
         Debug.Log(name + " sumo " + cantidad + " moneda(s). Total: " + monedas, this);
+        NotificarMonedasCambiadas();
     }
 
     public bool PuedeGastar(int cantidad)
@@ -34,7 +38,13 @@ public class PlayerWallet : MonoBehaviour
 
         monedas -= cantidad;
         Debug.Log(name + " gasto " + cantidad + " moneda(s). Total: " + monedas, this);
+        NotificarMonedasCambiadas();
 
         return true;
+    }
+
+    private void NotificarMonedasCambiadas()
+    {
+        MonedasCambiadas?.Invoke(monedas);
     }
 }

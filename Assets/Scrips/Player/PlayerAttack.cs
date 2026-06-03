@@ -15,13 +15,13 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float tiempoEntreAtaques = 0.45f;
 
     // Espera antes de activar la colision del primer golpe.
-    [SerializeField] private float demoraHitboxAtaque1 = 0.12f;
+    [SerializeField] private float demoraHitboxAtaque1 = 0.08f;
 
     // Espera antes de activar la colision del segundo golpe.
     [SerializeField] private float demoraHitboxAtaque2 = 0.14f;
 
     // Tiempo real durante el que el primer golpe puede hacer dano.
-    [SerializeField] private float duracionHitboxAtaque1 = 0.12f;
+    [SerializeField] private float duracionHitboxAtaque1 = 0.18f;
 
     // Tiempo real durante el que el segundo golpe puede hacer dano.
     [SerializeField] private float duracionHitboxAtaque2 = 0.14f;

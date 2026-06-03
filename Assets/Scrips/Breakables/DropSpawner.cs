@@ -6,6 +6,12 @@ using UnityEngine;
 // El objeto rompible no necesita saber si suelta vida, monedas, bombas u otra cosa.
 public class DropSpawner : MonoBehaviour
 {
+    private enum ModoDrop
+    {
+        Independiente,
+        Exclusivo
+    }
+
     [Serializable]
     private class DropEntry
     {
@@ -18,12 +24,24 @@ public class DropSpawner : MonoBehaviour
     }
 
     [SerializeField] private Transform puntoSpawn;
+    [SerializeField] private ModoDrop modoDrop = ModoDrop.Independiente;
     [SerializeField] private List<DropEntry> drops = new List<DropEntry>();
 
     public void Spawnear()
     {
         Vector3 posicionBase = puntoSpawn != null ? puntoSpawn.position : transform.position;
 
+        if(modoDrop == ModoDrop.Exclusivo)
+        {
+            SpawnearDropExclusivo(posicionBase);
+            return;
+        }
+
+        SpawnearDropsIndependientes(posicionBase);
+    }
+
+    private void SpawnearDropsIndependientes(Vector3 posicionBase)
+    {
         foreach(DropEntry drop in drops)
         {
             if(drop == null || drop.prefab == null)
@@ -41,6 +59,54 @@ public class DropSpawner : MonoBehaviour
                 Vector2 offset = drop.offset + ObtenerOffsetAleatorio(drop);
                 Instantiate(drop.prefab, posicionBase + (Vector3)offset, Quaternion.identity);
             }
+        }
+    }
+
+    private void SpawnearDropExclusivo(Vector3 posicionBase)
+    {
+        float pesoTotal = 0;
+
+        foreach(DropEntry drop in drops)
+        {
+            if(drop == null || drop.prefab == null || drop.probabilidad <= 0)
+            {
+                continue;
+            }
+
+            pesoTotal += drop.probabilidad;
+        }
+
+        if(pesoTotal <= 0)
+        {
+            return;
+        }
+
+        float seleccion = UnityEngine.Random.Range(0, pesoTotal);
+        float acumulado = 0;
+
+        foreach(DropEntry drop in drops)
+        {
+            if(drop == null || drop.prefab == null || drop.probabilidad <= 0)
+            {
+                continue;
+            }
+
+            acumulado += drop.probabilidad;
+
+            if(seleccion <= acumulado)
+            {
+                SpawnearDrop(drop, posicionBase);
+                return;
+            }
+        }
+    }
+
+    private void SpawnearDrop(DropEntry drop, Vector3 posicionBase)
+    {
+        for(int i = 0; i < drop.cantidad; i++)
+        {
+            Vector2 offset = drop.offset + ObtenerOffsetAleatorio(drop);
+            Instantiate(drop.prefab, posicionBase + (Vector3)offset, Quaternion.identity);
         }
     }
 

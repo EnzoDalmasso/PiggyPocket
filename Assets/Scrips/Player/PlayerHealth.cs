@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 // Maneja la vida del jugador, el estado de golpe y la muerte.
@@ -29,6 +30,8 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     private int vidaActual;
     private float contadorHit;
     private float contadorInvulnerabilidad;
+
+    public event Action<int, int> VidaCambiada;
 
     public int VidaActual => vidaActual;
     public int VidaMaxima => vidaMaxima;
@@ -65,6 +68,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
         vidaActual = Mathf.Max(vidaActual - cantidad, 0);
         Debug.Log(name + " recibio " + cantidad + " de dano. Vida: " + vidaActual, this);
+        NotificarVidaCambiada();
 
         if(vidaActual <= 0)
         {
@@ -87,6 +91,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
         vidaActual = Mathf.Min(vidaActual + cantidad, vidaMaxima);
         Debug.Log(name + " recupero " + cantidad + " de vida. Vida: " + vidaActual, this);
+        NotificarVidaCambiada();
 
         return true;
     }
@@ -108,5 +113,10 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         contadorHit = 0;
         contadorInvulnerabilidad = 0;
         Debug.Log(name + " murio.", this);
+    }
+
+    private void NotificarVidaCambiada()
+    {
+        VidaCambiada?.Invoke(vidaActual, vidaMaxima);
     }
 }

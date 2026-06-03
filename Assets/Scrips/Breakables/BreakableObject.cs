@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 // Base reutilizable para barriles, cajas, rocas u otros objetos rompibles.
@@ -22,8 +23,17 @@ public class BreakableObject : MonoBehaviour, IDamageable
     [Header("Colisiones")]
     [SerializeField] private bool desactivarColisionesAlRomper = true;
 
+    [Header("Feedback")]
+    [SerializeField] private float duracionFeedbackGolpe = 0.08f;
+    [SerializeField] private float escalaFeedbackGolpe = 1.08f;
+    [SerializeField] private Color colorFeedbackGolpe = new Color(1f, 0.65f, 0.35f, 1f);
+
     private int vidaActual;
     private bool dropsSpawneados;
+    private SpriteRenderer[] spriteRenderers;
+    private Color[] coloresOriginales;
+    private Vector3 escalaOriginal;
+    private Coroutine feedbackGolpeCoroutine;
 
     public int VidaActual => vidaActual;
     public int VidaMaxima => vidaMaxima;
@@ -50,7 +60,10 @@ public class BreakableObject : MonoBehaviour, IDamageable
         if(vidaActual <= 0)
         {
             Romper();
+            return;
         }
+
+        ReproducirFeedbackGolpe();
     }
 
     private void Romper()
@@ -131,6 +144,63 @@ public class BreakableObject : MonoBehaviour, IDamageable
         if(dropSpawner == null)
         {
             dropSpawner = GetComponent<DropSpawner>();
+        }
+
+        spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        coloresOriginales = new Color[spriteRenderers.Length];
+
+        for(int i = 0; i < spriteRenderers.Length; i++)
+        {
+            coloresOriginales[i] = spriteRenderers[i].color;
+        }
+
+        escalaOriginal = transform.localScale;
+    }
+
+    private void ReproducirFeedbackGolpe()
+    {
+        if(duracionFeedbackGolpe <= 0)
+        {
+            return;
+        }
+
+        if(feedbackGolpeCoroutine != null)
+        {
+            StopCoroutine(feedbackGolpeCoroutine);
+            RestaurarFeedbackGolpe();
+        }
+
+        feedbackGolpeCoroutine = StartCoroutine(FeedbackGolpe());
+    }
+
+    private IEnumerator FeedbackGolpe()
+    {
+        transform.localScale = escalaOriginal * escalaFeedbackGolpe;
+
+        foreach(SpriteRenderer spriteRenderer in spriteRenderers)
+        {
+            if(spriteRenderer != null)
+            {
+                spriteRenderer.color = colorFeedbackGolpe;
+            }
+        }
+
+        yield return new WaitForSeconds(duracionFeedbackGolpe);
+
+        RestaurarFeedbackGolpe();
+        feedbackGolpeCoroutine = null;
+    }
+
+    private void RestaurarFeedbackGolpe()
+    {
+        transform.localScale = escalaOriginal;
+
+        for(int i = 0; i < spriteRenderers.Length; i++)
+        {
+            if(spriteRenderers[i] != null)
+            {
+                spriteRenderers[i].color = coloresOriginales[i];
+            }
         }
     }
 }
