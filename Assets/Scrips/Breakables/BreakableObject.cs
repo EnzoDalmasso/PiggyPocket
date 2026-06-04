@@ -55,7 +55,6 @@ public class BreakableObject : MonoBehaviour, IDamageable
         }
 
         vidaActual = Mathf.Max(vidaActual - cantidad, 0);
-        Debug.Log(name + " recibio " + cantidad + " de dano. Vida: " + vidaActual, this);
 
         if(vidaActual <= 0)
         {
@@ -75,6 +74,7 @@ public class BreakableObject : MonoBehaviour, IDamageable
 
         EstaRoto = true;
         Roto?.Invoke();
+        GameAudioManager.ReproducirRompible();
 
         ReproducirAnimacionRuptura();
 

@@ -5,7 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class LevelGoal : MonoBehaviour
 {
-    [SerializeField] private string mensajeVictoria = "Nivel completado";
     [SerializeField] private LevelVictoryScreen pantallaVictoria;
 
     private bool completado;
@@ -47,7 +46,5 @@ public class LevelGoal : MonoBehaviour
         {
             Debug.LogWarning("LevelGoal no encontro LevelVictoryScreen. Agrega HUDCanvas a la escena.", this);
         }
-
-        Debug.Log(mensajeVictoria, this);
     }
 }

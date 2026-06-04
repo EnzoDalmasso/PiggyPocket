@@ -63,7 +63,6 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable
         }
 
         vidaActual = Mathf.Max(vidaActual - cantidad, 0);
-        Debug.Log(name + " recibio " + cantidad + " de dano. Vida: " + vidaActual, this);
 
         AlRecibirDano(cantidad, puntoGolpe, atacante);
 
@@ -86,7 +85,6 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable
         }
 
         EstaMuerto = true;
-        Debug.Log(name + " fue derrotado.", this);
         MuerteIniciada?.Invoke();
         AlMorir();
         DetenerFisicaSiCorresponde();
@@ -216,7 +214,19 @@ public abstract class EnemyBase : MonoBehaviour, IDamageable
 
     private bool EsMismoObjeto(Collider2D other)
     {
-        return other == null || other.transform.root == transform.root;
+        if(other == null)
+        {
+            return true;
+        }
+
+        if(other.transform == transform || other.transform.IsChildOf(transform))
+        {
+            return true;
+        }
+
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+
+        return rb != null && other.attachedRigidbody == rb;
     }
 
     private bool ContactoListoParaDanar(Collider2D other)

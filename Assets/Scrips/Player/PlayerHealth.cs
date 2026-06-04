@@ -68,7 +68,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         }
 
         vidaActual = Mathf.Max(vidaActual - cantidad, 0);
-        Debug.Log(name + " recibio " + cantidad + " de dano. Vida: " + vidaActual, this);
         NotificarVidaCambiada();
 
         if(vidaActual <= 0)
@@ -77,6 +76,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
             return;
         }
 
+        GameAudioManager.ReproducirDanoJugador();
         contadorHit = duracionHit;
         contadorInvulnerabilidad = duracionInvulnerabilidad;
 
@@ -91,7 +91,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         }
 
         vidaActual = Mathf.Min(vidaActual + cantidad, vidaMaxima);
-        Debug.Log(name + " recupero " + cantidad + " de vida. Vida: " + vidaActual, this);
         NotificarVidaCambiada();
 
         return true;
@@ -113,8 +112,9 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         EstaMuerto = true;
         contadorHit = 0;
         contadorInvulnerabilidad = 0;
+        GameAudioManager.DetenerMusicaFondo();
+        GameAudioManager.ReproducirMuerteJugador();
         Muerte?.Invoke();
-        Debug.Log(name + " murio.", this);
     }
 
     private void NotificarVidaCambiada()

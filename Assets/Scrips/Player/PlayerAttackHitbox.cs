@@ -27,6 +27,9 @@ public class PlayerAttackHitbox : MonoBehaviour
     // Objeto que origina el ataque.
     private GameObject atacante;
 
+    // Transform real del Player, usado para ignorar sus propios colliders.
+    private Transform atacanteTransform;
+
     private bool EstaActiva => hitbox != null && hitbox.enabled;
 
     void Awake()
@@ -34,7 +37,7 @@ public class PlayerAttackHitbox : MonoBehaviour
         hitbox = GetComponent<Collider2D>();
         hitbox.isTrigger = true;
         hitbox.enabled = false;
-        atacante = transform.root.gameObject;
+        AsignarAtacante();
     }
 
     public void Activar(int numeroAtaque)
@@ -67,7 +70,7 @@ public class PlayerAttackHitbox : MonoBehaviour
 
     private void IntentarGolpear(Collider2D other)
     {
-        if(!EstaActiva || other.transform.root == transform.root)
+        if(!EstaActiva || EsColliderPropio(other))
         {
             return;
         }
@@ -95,6 +98,41 @@ public class PlayerAttackHitbox : MonoBehaviour
     private bool PerteneceACapaObjetivo(int layer)
     {
         return capasObjetivos.value == 0 || (capasObjetivos.value & (1 << layer)) != 0;
+    }
+
+    private bool EsColliderPropio(Collider2D other)
+    {
+        if(other == null)
+        {
+            return true;
+        }
+
+        if(atacanteTransform == null)
+        {
+            return false;
+        }
+
+        if(other.attachedRigidbody != null && other.attachedRigidbody.transform == atacanteTransform)
+        {
+            return true;
+        }
+
+        return other.transform == atacanteTransform || other.transform.IsChildOf(atacanteTransform);
+    }
+
+    private void AsignarAtacante()
+    {
+        PlayerAttack playerAttack = GetComponentInParent<PlayerAttack>();
+
+        if(playerAttack != null)
+        {
+            atacante = playerAttack.gameObject;
+            atacanteTransform = playerAttack.transform;
+            return;
+        }
+
+        atacanteTransform = transform.parent != null ? transform.parent : transform;
+        atacante = atacanteTransform.gameObject;
     }
 
     private IDamageable BuscarDamageable(Collider2D objetivo)

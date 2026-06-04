@@ -94,6 +94,8 @@ public class GameOverScreen : MonoBehaviour
         }
 
         visible = true;
+        GameAudioManager.DetenerMusicaFondo();
+        GameAudioManager.ReproducirDerrota();
 
         if(textoTitulo != null)
         {
@@ -279,6 +281,8 @@ public class GameOverScreen : MonoBehaviour
             return;
         }
 
+        boton.onClick.RemoveListener(GameAudioManager.ReproducirClickUI);
+        boton.onClick.AddListener(GameAudioManager.ReproducirClickUI);
         boton.onClick.RemoveListener(accion);
         boton.onClick.AddListener(accion);
     }

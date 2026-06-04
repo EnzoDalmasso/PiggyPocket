@@ -165,3 +165,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoinCollectible
   valor: 5
+  sonidoRecolectar: {fileID: 8300000, guid: 4ea5d23c1c606e84d99fc39ab1d2b999, type: 3}

@@ -74,6 +74,7 @@ public class AreaEffectHazard : MonoBehaviour
         }
 
         activado = true;
+        ReproducirSonidoActivacion();
         ReproducirAnimacionActivacion();
         AplicarEfectosEnArea();
 
@@ -85,14 +86,26 @@ public class AreaEffectHazard : MonoBehaviour
         Destroy(gameObject, tiempoAntesDeDestruir);
     }
 
+    private void ReproducirSonidoActivacion()
+    {
+        if(aplicaVeneno)
+        {
+            GameAudioManager.ReproducirVeneno();
+            return;
+        }
+
+        GameAudioManager.ReproducirExplosion();
+    }
+
     private void AplicarEfectosEnArea()
     {
         Collider2D[] objetivos = BuscarObjetivos();
-        HashSet<Transform> raicesProcesadas = new HashSet<Transform>();
+        HashSet<MonoBehaviour> damageablesProcesados = new HashSet<MonoBehaviour>();
+        HashSet<PlayerStatusEffects> estadosProcesados = new HashSet<PlayerStatusEffects>();
 
         foreach(Collider2D objetivo in objetivos)
         {
-            if(objetivo == null || !raicesProcesadas.Add(objetivo.transform.root))
+            if(objetivo == null)
             {
                 continue;
             }
@@ -101,7 +114,7 @@ public class AreaEffectHazard : MonoBehaviour
             {
                 IDamageable damageable = BuscarDamageable(objetivo);
 
-                if(damageable != null)
+                if(damageable is MonoBehaviour componenteDamageable && damageablesProcesados.Add(componenteDamageable))
                 {
                     damageable.RecibirDano(dano, transform.position, gameObject);
                 }
@@ -111,7 +124,7 @@ public class AreaEffectHazard : MonoBehaviour
             {
                 PlayerStatusEffects statusEffects = objetivo.GetComponentInParent<PlayerStatusEffects>();
 
-                if(statusEffects != null)
+                if(statusEffects != null && estadosProcesados.Add(statusEffects))
                 {
                     statusEffects.AplicarVeneno(duracionVeneno);
                 }

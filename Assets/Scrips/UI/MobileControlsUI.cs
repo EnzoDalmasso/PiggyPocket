@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class MobileControlsUI : MonoBehaviour
 {
     private const string ControlsPath = "MobileControls";
+    private const string PauseButtonPath = "BotonPausaTouch";
 
     [Header("Visibilidad")]
     [SerializeField] private bool mostrarEnEditor = true;
@@ -17,17 +18,22 @@ public class MobileControlsUI : MonoBehaviour
     [SerializeField] private Sprite spriteDerecha;
     [SerializeField] private Sprite spriteBotonSalto;
     [SerializeField] private Sprite spriteBotonAtaque;
+    [SerializeField] private Sprite spriteBotonPausa;
     [SerializeField] private Sprite spriteIconoSalto;
     [SerializeField] private Sprite spriteIconoAtaque;
+    [SerializeField] private Sprite spriteIconoPausa;
 
     [Header("Layout")]
     [SerializeField] private Vector2 tamanoBotonMovimiento = new Vector2(104f, 104f);
     [SerializeField] private Vector2 tamanoBotonAccion = new Vector2(112f, 112f);
+    [SerializeField] private Vector2 tamanoBotonPausa = new Vector2(88f, 88f);
     [SerializeField] private Vector2 tamanoIconoAccion = new Vector2(54f, 54f);
+    [SerializeField] private Vector2 tamanoIconoPausa = new Vector2(42f, 42f);
     [SerializeField] private float margenHorizontal = 42f;
     [SerializeField] private float margenVertical = 38f;
 
     private GameObject panelControles;
+    private Button botonPausaTouch;
 
     void Awake()
     {
@@ -55,6 +61,8 @@ public class MobileControlsUI : MonoBehaviour
         {
             CrearControles();
         }
+
+        AsegurarBotonPausa();
     }
 
     private void CrearControles()
@@ -119,6 +127,111 @@ public class MobileControlsUI : MonoBehaviour
             new Vector2(-170f, 104f),
             tamanoBotonAccion,
             tamanoIconoAccion);
+
+        AsegurarBotonPausa();
+    }
+
+    private void AsegurarBotonPausa()
+    {
+        if(panelControles == null)
+        {
+            return;
+        }
+
+        Transform existente = panelControles.transform.Find(PauseButtonPath);
+
+        if(existente != null)
+        {
+            botonPausaTouch = existente.GetComponent<Button>();
+            AsegurarIconoPausa(existente);
+        }
+        else
+        {
+            botonPausaTouch = CrearBotonPausa(panelControles.transform);
+        }
+
+        ConfigurarBotonPausa();
+    }
+
+    private void AsegurarIconoPausa(Transform boton)
+    {
+        if(boton.Find("Icono") != null || boton.Find("BarraIzquierda") != null)
+        {
+            return;
+        }
+
+        if(spriteIconoPausa != null)
+        {
+            CrearIcono("Icono", boton, spriteIconoPausa, tamanoIconoPausa);
+        }
+        else
+        {
+            CrearIconoPausaPorDefecto(boton);
+        }
+    }
+
+    private Button CrearBotonPausa(Transform padre)
+    {
+        GameObject botonGO = CrearUIObject(PauseButtonPath, padre);
+        RectTransform rectTransform = botonGO.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(1f, 1f);
+        rectTransform.anchorMax = new Vector2(1f, 1f);
+        rectTransform.pivot = new Vector2(1f, 1f);
+        rectTransform.anchoredPosition = new Vector2(-margenHorizontal, -margenVertical);
+        rectTransform.sizeDelta = tamanoBotonPausa;
+
+        Image fondo = botonGO.AddComponent<Image>();
+        fondo.sprite = spriteBotonPausa;
+        fondo.preserveAspect = true;
+        fondo.raycastTarget = true;
+        fondo.color = new Color(1f, 1f, 1f, 0.72f);
+
+        Button boton = botonGO.AddComponent<Button>();
+        boton.targetGraphic = fondo;
+
+        ColorBlock colors = boton.colors;
+        colors.highlightedColor = new Color(1f, 1f, 1f, 0.9f);
+        colors.pressedColor = new Color(1f, 1f, 1f, 0.55f);
+        boton.colors = colors;
+
+        if(spriteIconoPausa != null)
+        {
+            CrearIcono(PauseButtonPath + "Icono", botonGO.transform, spriteIconoPausa, tamanoIconoPausa);
+        }
+        else
+        {
+            CrearIconoPausaPorDefecto(botonGO.transform);
+        }
+
+        return boton;
+    }
+
+    private void ConfigurarBotonPausa()
+    {
+        if(botonPausaTouch == null)
+        {
+            return;
+        }
+
+        botonPausaTouch.onClick.RemoveListener(GameAudioManager.ReproducirClickUI);
+        botonPausaTouch.onClick.AddListener(GameAudioManager.ReproducirClickUI);
+        botonPausaTouch.onClick.RemoveListener(AbrirPausa);
+        botonPausaTouch.onClick.AddListener(AbrirPausa);
+    }
+
+    private void AbrirPausa()
+    {
+        PauseMenuScreen pauseMenu = GetComponent<PauseMenuScreen>();
+
+        if(pauseMenu == null)
+        {
+            pauseMenu = Object.FindFirstObjectByType<PauseMenuScreen>(FindObjectsInactive.Include);
+        }
+
+        if(pauseMenu != null)
+        {
+            pauseMenu.Mostrar();
+        }
     }
 
     private void CrearBotonControl(
@@ -153,7 +266,12 @@ public class MobileControlsUI : MonoBehaviour
             return;
         }
 
-        GameObject iconoGO = CrearUIObject("Icono", botonGO.transform);
+        CrearIcono("Icono", botonGO.transform, spriteIcono, tamanoIcono);
+    }
+
+    private void CrearIcono(string nombre, Transform padre, Sprite spriteIcono, Vector2 tamanoIcono)
+    {
+        GameObject iconoGO = CrearUIObject(nombre, padre);
         RectTransform iconoRect = iconoGO.GetComponent<RectTransform>();
         iconoRect.anchorMin = new Vector2(0.5f, 0.5f);
         iconoRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -166,6 +284,27 @@ public class MobileControlsUI : MonoBehaviour
         icono.preserveAspect = true;
         icono.raycastTarget = false;
         icono.color = Color.white;
+    }
+
+    private void CrearIconoPausaPorDefecto(Transform padre)
+    {
+        CrearBarraPausa("BarraIzquierda", padre, new Vector2(-8f, 0f));
+        CrearBarraPausa("BarraDerecha", padre, new Vector2(8f, 0f));
+    }
+
+    private void CrearBarraPausa(string nombre, Transform padre, Vector2 posicion)
+    {
+        GameObject barraGO = CrearUIObject(nombre, padre);
+        RectTransform barraRect = barraGO.GetComponent<RectTransform>();
+        barraRect.anchorMin = new Vector2(0.5f, 0.5f);
+        barraRect.anchorMax = new Vector2(0.5f, 0.5f);
+        barraRect.pivot = new Vector2(0.5f, 0.5f);
+        barraRect.anchoredPosition = posicion;
+        barraRect.sizeDelta = new Vector2(10f, 34f);
+
+        Image barra = barraGO.AddComponent<Image>();
+        barra.color = Color.white;
+        barra.raycastTarget = false;
     }
 
     private void AplicarVisibilidad()

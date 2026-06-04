@@ -11,6 +11,9 @@ public class LifeCollectible : MonoBehaviour
     // Si esta activo, el pickup se consume aunque el Player ya tenga vida completa.
     [SerializeField] private bool consumirSiVidaCompleta;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip sonidoRecolectar;
+
     private Collider2D trigger;
     private bool recolectado;
 
@@ -48,6 +51,7 @@ public class LifeCollectible : MonoBehaviour
 
         recolectado = true;
         trigger.enabled = false;
+        GameAudioManager.ReproducirVida(sonidoRecolectar);
         Destroy(gameObject);
     }
 }

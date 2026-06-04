@@ -87,6 +87,7 @@ public class MainMenuScreen : MonoBehaviour
 
     public void MostrarPrincipal()
     {
+        GameAudioManager.ReanudarMusicaFondo();
         ActivarPanel(panelPrincipal);
     }
 
@@ -230,6 +231,8 @@ public class MainMenuScreen : MonoBehaviour
             return;
         }
 
+        boton.onClick.RemoveListener(GameAudioManager.ReproducirClickUI);
+        boton.onClick.AddListener(GameAudioManager.ReproducirClickUI);
         boton.onClick.RemoveListener(accion);
         boton.onClick.AddListener(accion);
     }

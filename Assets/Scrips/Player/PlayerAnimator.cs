@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Este script conecta el estado real del jugador con el Animator.
@@ -66,6 +67,10 @@ public class PlayerAnimator : MonoBehaviour
 
     // Evita reiniciar la misma animacion todos los frames.
     private string animacionActual;
+
+    // Evita recalcular hashes y spamear warnings si falta algun estado.
+    private readonly Dictionary<string, int> hashesEstados = new Dictionary<string, int>();
+    private readonly HashSet<string> estadosFaltantesAvisados = new HashSet<string>();
 
     // Contador interno de la animacion de aterrizaje.
     private float contadorGrounded;
@@ -242,16 +247,33 @@ public class PlayerAnimator : MonoBehaviour
             return;
         }
 
-        int estadoHash = Animator.StringToHash("Base Layer." + nombreAnimacion);
+        int estadoHash = ObtenerHashEstado(nombreAnimacion);
 
         if(!animator.HasState(0, estadoHash))
         {
-            Debug.LogWarning("No existe el estado de animacion: " + nombreAnimacion, this);
+            if(estadosFaltantesAvisados.Add(nombreAnimacion))
+            {
+                Debug.LogWarning("No existe el estado de animacion: " + nombreAnimacion, this);
+            }
+
             return;
         }
 
         animator.CrossFade(estadoHash, duracionTransicion);
         animacionActual = nombreAnimacion;
+    }
+
+    private int ObtenerHashEstado(string nombreAnimacion)
+    {
+        if(hashesEstados.TryGetValue(nombreAnimacion, out int hash))
+        {
+            return hash;
+        }
+
+        hash = Animator.StringToHash("Base Layer." + nombreAnimacion);
+        hashesEstados.Add(nombreAnimacion, hash);
+
+        return hash;
     }
 
     private void ActualizarGrounded(bool estaSuelo)

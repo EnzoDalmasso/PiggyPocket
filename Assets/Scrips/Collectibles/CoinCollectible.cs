@@ -8,6 +8,9 @@ public class CoinCollectible : MonoBehaviour
     // Cantidad de monedas que suma al Player al recolectarla.
     [SerializeField] private int valor = 1;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip sonidoRecolectar;
+
     private Collider2D trigger;
     private bool recolectado;
 
@@ -46,6 +49,7 @@ public class CoinCollectible : MonoBehaviour
         recolectado = true;
         trigger.enabled = false;
         playerWallet.AgregarMonedas(valor);
+        GameAudioManager.ReproducirMoneda(sonidoRecolectar);
         Destroy(gameObject);
     }
 }

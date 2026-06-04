@@ -17,7 +17,6 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     public void RecibirDano(int cantidad, Vector2 puntoGolpe, GameObject atacante)
     {
         vidaActual = Mathf.Max(vidaActual - cantidad, 0);
-        Debug.Log(name + " recibio " + cantidad + " de dano. Vida: " + vidaActual, this);
 
         if(vidaActual <= 0)
         {
@@ -27,8 +26,6 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     private void Morir()
     {
-        Debug.Log(name + " fue derrotado.", this);
-
         if(destruirAlMorir)
         {
             Destroy(gameObject);

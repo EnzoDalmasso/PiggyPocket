@@ -40,6 +40,9 @@ public class PlayerMovement : MonoBehaviour
     // Tiempo restante del knockback.
     private float contadorKnockback;
 
+    // Guarda el pedido de salto hasta el siguiente paso de fisica.
+    private bool saltoPendiente;
+
 
     void Start()
     {
@@ -62,25 +65,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
- 
     void Update()
     {
         if(playerHealth != null && playerHealth.EstaMuerto)
         {
-            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
-            return;
-        }
-
-        if(contadorKnockback > 0)
-        {
-            contadorKnockback -= Time.deltaTime;
-            rb.linearVelocity = new Vector2(velocidadKnockbackX, rb.linearVelocity.y);
-            return;
-        }
-
-        if(playerHealth != null && playerHealth.EstaRecibiendoDano)
-        {
-            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
             return;
         }
 
@@ -100,7 +88,6 @@ public class PlayerMovement : MonoBehaviour
 
         // Se toma el input horizontal y se aplica al Rigidbody2D.
         movimientoH = playerInput.MovimientoHorizontal;
-        rb.linearVelocity = new Vector2(movimientoH * velocidad, rb.linearVelocity.y);
 
         // Invierte visualmente al jugador segun la direccion en la que se mueve.
         if(movimientoH != 0)
@@ -111,10 +98,37 @@ public class PlayerMovement : MonoBehaviour
         // Permite saltar si el jugador presiono salto y aun tiene coyote time disponible.
         if(playerInput.SaltoPresionado && contadorCoyote > 0)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, fuerzaSalto);
+            saltoPendiente = true;
+            GameAudioManager.ReproducirSalto();
 
             // Se consume el coyote time para evitar multiples saltos en el aire.
             contadorCoyote = 0;
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if(playerHealth != null && playerHealth.EstaMuerto)
+        {
+            saltoPendiente = false;
+            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            return;
+        }
+
+        if(contadorKnockback > 0)
+        {
+            contadorKnockback -= Time.fixedDeltaTime;
+            saltoPendiente = false;
+            rb.linearVelocity = new Vector2(velocidadKnockbackX, rb.linearVelocity.y);
+            return;
+        }
+
+        rb.linearVelocity = new Vector2(movimientoH * velocidad, rb.linearVelocity.y);
+
+        if(saltoPendiente)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, fuerzaSalto);
+            saltoPendiente = false;
         }
     }
 
@@ -134,6 +148,7 @@ public class PlayerMovement : MonoBehaviour
 
         velocidadKnockbackX = Mathf.Sign(direccionX) * fuerzaHorizontal;
         contadorKnockback = duracion;
+        saltoPendiente = false;
         rb.linearVelocity = new Vector2(velocidadKnockbackX, fuerzaVertical);
     }
 
@@ -146,6 +161,7 @@ public class PlayerMovement : MonoBehaviour
 
         contadorKnockback = 0;
         contadorCoyote = 0;
+        saltoPendiente = false;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, fuerzaRebote);
     }
 }

@@ -20,7 +20,6 @@ public class PlayerWallet : MonoBehaviour
         }
 
         monedas += cantidad;
-        Debug.Log(name + " sumo " + cantidad + " moneda(s). Total: " + monedas, this);
         NotificarMonedasCambiadas();
     }
 
@@ -37,7 +36,6 @@ public class PlayerWallet : MonoBehaviour
         }
 
         monedas -= cantidad;
-        Debug.Log(name + " gasto " + cantidad + " moneda(s). Total: " + monedas, this);
         NotificarMonedasCambiadas();
 
         return true;

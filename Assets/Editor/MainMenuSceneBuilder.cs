@@ -9,6 +9,8 @@ using UnityEngine.UI;
 public static class MainMenuSceneBuilder
 {
     private const string ScenePath = "Assets/Scenes/MainMenu.unity";
+    private const string MusicPath = "Assets/Sound/Music/POL-king-of-coins-short.wav";
+    private const string SoundUIClickPath = "Assets/Sound/Effects/SonidoclickUI.mp3";
 
     [MenuItem("PiggyPocket/Scenes/Generate Main Menu")]
     public static void BuildMainMenu()
@@ -77,6 +79,20 @@ public static class MainMenuSceneBuilder
 
         MainMenuScreen mainMenu = canvasGO.AddComponent<MainMenuScreen>();
         mainMenu.ReconstruirUI();
+
+        ConfigureGameAudioManager(canvasGO);
+    }
+
+    private static void ConfigureGameAudioManager(GameObject canvasGO)
+    {
+        GameAudioManager audioManager = canvasGO.AddComponent<GameAudioManager>();
+        SerializedObject serializedAudio = new SerializedObject(audioManager);
+        serializedAudio.FindProperty("volumenSfx").floatValue = 1f;
+        serializedAudio.FindProperty("volumenMusica").floatValue = 0.45f;
+        serializedAudio.FindProperty("musicaFondo").objectReferenceValue = LoadAudioClip(MusicPath);
+        serializedAudio.FindProperty("reproducirMusicaAlIniciar").boolValue = true;
+        serializedAudio.FindProperty("sonidoClickUI").objectReferenceValue = LoadAudioClip(SoundUIClickPath);
+        serializedAudio.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static void CreateEventSystem()
@@ -89,5 +105,17 @@ public static class MainMenuSceneBuilder
         GameObject eventSystemGO = new GameObject("EventSystem");
         eventSystemGO.AddComponent<EventSystem>();
         eventSystemGO.AddComponent<StandaloneInputModule>();
+    }
+
+    private static AudioClip LoadAudioClip(string path)
+    {
+        AudioClip audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+
+        if(audioClip == null)
+        {
+            Debug.LogWarning("No se encontro el audio: " + path);
+        }
+
+        return audioClip;
     }
 }

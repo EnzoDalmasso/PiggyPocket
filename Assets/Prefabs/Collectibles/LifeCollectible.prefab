@@ -166,3 +166,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LifeCollectible
   cantidadVida: 1
   consumirSiVidaCompleta: 0
+  sonidoRecolectar: {fileID: 8300000, guid: 2e98a994f6f941346880fdd803b1aaf6, type: 3}

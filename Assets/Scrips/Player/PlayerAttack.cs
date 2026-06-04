@@ -163,6 +163,8 @@ public class PlayerAttack : MonoBehaviour
             attackHitbox.Desactivar();
         }
 
+        GameAudioManager.ReproducirAtaque(numeroAtaque);
+
         if(contadorDemoraHitbox <= 0)
         {
             ActivarHitbox();

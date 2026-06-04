@@ -25,6 +25,7 @@ public class PauseMenuScreen : MonoBehaviour
     [SerializeField] private Button botonContinuar;
     [SerializeField] private Button botonAjustes;
     [SerializeField] private Button botonReiniciar;
+    [SerializeField] private Button botonMenuPrincipal;
     [SerializeField] private Button botonVolverAjustes;
     [SerializeField] private GameObject[] overlaysBloqueantes;
 
@@ -40,6 +41,8 @@ public class PauseMenuScreen : MonoBehaviour
 
     [Header("Comportamiento")]
     [SerializeField] private bool pausarTiempo = true;
+    [SerializeField] private string nombreEscenaMenuPrincipal = "MainMenu";
+    [SerializeField] private string rutaEscenaMenuPrincipalEditor = "Assets/Scenes/MainMenu.unity";
 
     private bool visible;
     private float timeScaleAnterior = 1f;
@@ -96,6 +99,7 @@ public class PauseMenuScreen : MonoBehaviour
         }
 
         MostrarMenuPrincipal();
+        GameAudioManager.PausarMusicaFondo();
 
         if(canvasGroup != null)
         {
@@ -120,11 +124,14 @@ public class PauseMenuScreen : MonoBehaviour
 
         visible = false;
         RestaurarTiempo();
+        GameAudioManager.ReanudarMusicaFondo();
         OcultarInstantaneo();
     }
 
     public void MostrarAjustes()
     {
+        GameAudioManager.PausarMusicaFondo();
+
         if(menuPrincipal != null)
         {
             menuPrincipal.SetActive(false);
@@ -169,6 +176,22 @@ public class PauseMenuScreen : MonoBehaviour
             SceneManager.LoadScene(escenaActual.name);
 #endif
         }
+    }
+
+    public void CargarMenuPrincipal()
+    {
+        RestaurarTiempo();
+        GameAudioManager.DetenerMusicaFondo();
+
+#if UNITY_EDITOR
+        if(!string.IsNullOrEmpty(rutaEscenaMenuPrincipalEditor))
+        {
+            EditorSceneManager.LoadScene(rutaEscenaMenuPrincipalEditor);
+            return;
+        }
+#endif
+
+        SceneManager.LoadScene(nombreEscenaMenuPrincipal);
     }
 
     private void AsegurarReferencias()
@@ -216,6 +239,11 @@ public class PauseMenuScreen : MonoBehaviour
             botonReiniciar = BuscarComponente<Button>(CardPath + "/BotonReiniciar");
         }
 
+        if(botonMenuPrincipal == null)
+        {
+            botonMenuPrincipal = BuscarComponente<Button>(CardPath + "/BotonMenuPrincipal");
+        }
+
         if(botonVolverAjustes == null)
         {
             botonVolverAjustes = BuscarComponente<Button>(SettingsPath + "/BotonVolver");
@@ -243,6 +271,8 @@ public class PauseMenuScreen : MonoBehaviour
             overlaysBloqueantes = CrearListaOverlaysBloqueantes(victoryOverlay, gameOverOverlay);
         }
 
+        AsegurarBotonMenuPrincipal();
+
         if(panelPausa == null)
         {
             Debug.LogWarning("PauseMenuScreen no encontro PauseOverlay dentro de HUDCanvas.", this);
@@ -262,13 +292,14 @@ public class PauseMenuScreen : MonoBehaviour
 
         canvasGroup = overlayGO.AddComponent<CanvasGroup>();
 
-        GameObject cardGO = CrearCard("PauseCard", overlay, new Vector2(520f, 360f));
+        GameObject cardGO = CrearCard("PauseCard", overlay, new Vector2(520f, 430f));
         RectTransform card = cardGO.GetComponent<RectTransform>();
 
-        CrearTexto("Titulo", card, "Pausa", 46f, new Vector2(0f, 116f), new Vector2(460f, 64f));
-        botonContinuar = CrearBoton("BotonContinuar", card, "Continuar", new Vector2(0f, 42f), new Vector2(260f, 54f));
-        botonAjustes = CrearBoton("BotonAjustes", card, "Ajustes", new Vector2(0f, -26f), new Vector2(260f, 54f));
-        botonReiniciar = CrearBoton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -94f), new Vector2(260f, 54f));
+        CrearTexto("Titulo", card, "Pausa", 46f, new Vector2(0f, 150f), new Vector2(460f, 64f));
+        botonContinuar = CrearBoton("BotonContinuar", card, "Continuar", new Vector2(0f, 72f), new Vector2(260f, 54f));
+        botonAjustes = CrearBoton("BotonAjustes", card, "Ajustes", new Vector2(0f, 4f), new Vector2(260f, 54f));
+        botonReiniciar = CrearBoton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -64f), new Vector2(260f, 54f));
+        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -132f), new Vector2(260f, 54f));
 
         GameObject settingsGO = CrearCard("SettingsCard", overlay, new Vector2(520f, 380f));
         RectTransform settingsCard = settingsGO.GetComponent<RectTransform>();
@@ -295,7 +326,56 @@ public class PauseMenuScreen : MonoBehaviour
         ConfigurarBoton(botonContinuar, Ocultar);
         ConfigurarBoton(botonAjustes, MostrarAjustes);
         ConfigurarBoton(botonReiniciar, ReiniciarNivel);
+        ConfigurarBoton(botonMenuPrincipal, CargarMenuPrincipal);
         ConfigurarBoton(botonVolverAjustes, MostrarMenuPrincipal);
+    }
+
+    private void AsegurarBotonMenuPrincipal()
+    {
+        if(botonMenuPrincipal != null)
+        {
+            ActualizarTextoBoton(botonMenuPrincipal, "Salir al menu");
+            return;
+        }
+
+        Transform card = transform.Find(CardPath);
+
+        if(card == null)
+        {
+            return;
+        }
+
+        RectTransform cardRect = card.GetComponent<RectTransform>();
+
+        if(cardRect != null)
+        {
+            cardRect.sizeDelta = new Vector2(520f, 430f);
+        }
+
+        ReubicarBoton(botonContinuar, new Vector2(0f, 72f));
+        ReubicarBoton(botonAjustes, new Vector2(0f, 4f));
+        ReubicarBoton(botonReiniciar, new Vector2(0f, -64f));
+        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -132f), new Vector2(260f, 54f));
+    }
+
+    private static void ReubicarBoton(Button boton, Vector2 posicion)
+    {
+        RectTransform rectTransform = boton != null ? boton.GetComponent<RectTransform>() : null;
+
+        if(rectTransform != null)
+        {
+            rectTransform.anchoredPosition = posicion;
+        }
+    }
+
+    private static void ActualizarTextoBoton(Button boton, string contenido)
+    {
+        TMP_Text texto = boton != null ? boton.GetComponentInChildren<TMP_Text>() : null;
+
+        if(texto != null)
+        {
+            texto.text = contenido;
+        }
     }
 
     private void ConfigurarAjustes()
@@ -335,6 +415,8 @@ public class PauseMenuScreen : MonoBehaviour
             return;
         }
 
+        boton.onClick.RemoveListener(GameAudioManager.ReproducirClickUI);
+        boton.onClick.AddListener(GameAudioManager.ReproducirClickUI);
         boton.onClick.RemoveListener(accion);
         boton.onClick.AddListener(accion);
     }

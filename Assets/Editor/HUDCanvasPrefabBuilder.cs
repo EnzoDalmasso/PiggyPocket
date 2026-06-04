@@ -12,8 +12,24 @@ public static class HUDCanvasPrefabBuilder
     private const string SpriteRightPath = "Assets/Sprites/Mobile/Sprites/Style C/Default/direction_right.png";
     private const string SpriteJumpButtonPath = "Assets/Sprites/Mobile/Sprites/Style C/Default/button_circle.png";
     private const string SpriteAttackButtonPath = "Assets/Sprites/Mobile/Sprites/Style C/Default/button_diamond.png";
+    private const string SpritePauseButtonPath = "Assets/Sprites/Mobile/Sprites/Style C/Default/button_circle.png";
     private const string SpriteJumpIconPath = "Assets/Sprites/Mobile/Sprites/Icons/Default/icon_jump.png";
     private const string SpriteAttackIconPath = "Assets/Sprites/Mobile/Sprites/Icons/Default/icon_sword.png";
+    private const string SpritePauseIconPath = "Assets/Sprites/Mobile/Sprites/Icons/Default/icon_pause.png";
+    private const string MusicPath = "Assets/Sound/Music/POL-king-of-coins-short.wav";
+    private const string SoundJumpPath = "Assets/Sound/Effects/Salto.ogg";
+    private const string SoundAttack1Path = "Assets/Sound/Effects/Ataque1.ogg";
+    private const string SoundAttack2Path = "Assets/Sound/Effects/Ataque2.ogg";
+    private const string SoundPlayerDamagePath = "Assets/Sound/Effects/DanoPlayer.aiff";
+    private const string SoundPlayerDeathPath = "Assets/Sound/Effects/MuertePlayer.mp3";
+    private const string SoundCoinFallbackPath = "Assets/Sound/Effects/Coin1.ogg";
+    private const string SoundLifePath = "Assets/Sound/Effects/LifeCollectible.ogg";
+    private const string SoundBreakablePath = "Assets/Sound/Effects/BarrelSound.ogg";
+    private const string SoundExplosionPath = "Assets/Sound/Effects/SonidoExplosion.wav";
+    private const string SoundPoisonPath = "Assets/Sound/Effects/SonidoVeneno.ogg";
+    private const string SoundVictoryPath = "Assets/Sound/Effects/SonidoVictoria.mp3";
+    private const string SoundDefeatPath = "Assets/Sound/Effects/SonidoDerrota.wav";
+    private const string SoundUIClickPath = "Assets/Sound/Effects/SonidoclickUI.mp3";
 
     [InitializeOnLoadMethod]
     private static void RebuildHUDCanvasIfRequested()
@@ -46,6 +62,7 @@ public static class HUDCanvasPrefabBuilder
             RebuildGameOverPanel(hudCanvas);
             RebuildPausePanel(hudCanvas);
             RebuildMobileControls(hudCanvas);
+            ConfigureGameAudioManager(hudCanvas);
 
             PrefabUtility.SaveAsPrefabAsset(hudCanvas, HUDCanvasPath);
             AssetDatabase.SaveAssets();
@@ -123,6 +140,36 @@ public static class HUDCanvasPrefabBuilder
         overlayGO.SetActive(false);
     }
 
+    private static void ConfigureGameAudioManager(GameObject hudCanvas)
+    {
+        GameAudioManager audioManager = hudCanvas.GetComponent<GameAudioManager>();
+
+        if(audioManager == null)
+        {
+            audioManager = hudCanvas.AddComponent<GameAudioManager>();
+        }
+
+        SerializedObject serializedAudio = new SerializedObject(audioManager);
+        serializedAudio.FindProperty("volumenSfx").floatValue = 1f;
+        serializedAudio.FindProperty("volumenMusica").floatValue = 0.45f;
+        serializedAudio.FindProperty("musicaFondo").objectReferenceValue = LoadAudioClip(MusicPath);
+        serializedAudio.FindProperty("reproducirMusicaAlIniciar").boolValue = true;
+        serializedAudio.FindProperty("sonidoSalto").objectReferenceValue = LoadAudioClip(SoundJumpPath);
+        serializedAudio.FindProperty("sonidoAtaque1").objectReferenceValue = LoadAudioClip(SoundAttack1Path);
+        serializedAudio.FindProperty("sonidoAtaque2").objectReferenceValue = LoadAudioClip(SoundAttack2Path);
+        serializedAudio.FindProperty("sonidoDanoJugador").objectReferenceValue = LoadAudioClip(SoundPlayerDamagePath);
+        serializedAudio.FindProperty("sonidoMuerteJugador").objectReferenceValue = LoadAudioClip(SoundPlayerDeathPath);
+        serializedAudio.FindProperty("sonidoMoneda").objectReferenceValue = LoadAudioClip(SoundCoinFallbackPath);
+        serializedAudio.FindProperty("sonidoVida").objectReferenceValue = LoadAudioClip(SoundLifePath);
+        serializedAudio.FindProperty("sonidoRompible").objectReferenceValue = LoadAudioClip(SoundBreakablePath);
+        serializedAudio.FindProperty("sonidoExplosion").objectReferenceValue = LoadAudioClip(SoundExplosionPath);
+        serializedAudio.FindProperty("sonidoVeneno").objectReferenceValue = LoadAudioClip(SoundPoisonPath);
+        serializedAudio.FindProperty("sonidoVictoria").objectReferenceValue = LoadAudioClip(SoundVictoryPath);
+        serializedAudio.FindProperty("sonidoDerrota").objectReferenceValue = LoadAudioClip(SoundDefeatPath);
+        serializedAudio.FindProperty("sonidoClickUI").objectReferenceValue = LoadAudioClip(SoundUIClickPath);
+        serializedAudio.ApplyModifiedPropertiesWithoutUndo();
+    }
+
     private static void RebuildMobileControls(GameObject hudCanvas)
     {
         Transform existingControls = hudCanvas.transform.Find("MobileControls");
@@ -141,8 +188,10 @@ public static class HUDCanvasPrefabBuilder
         Sprite rightSprite = LoadSprite(SpriteRightPath);
         Sprite jumpButtonSprite = LoadSprite(SpriteJumpButtonPath);
         Sprite attackButtonSprite = LoadSprite(SpriteAttackButtonPath);
+        Sprite pauseButtonSprite = LoadSprite(SpritePauseButtonPath);
         Sprite jumpIconSprite = LoadSprite(SpriteJumpIconPath);
         Sprite attackIconSprite = LoadSprite(SpriteAttackIconPath);
+        Sprite pauseIconSprite = null;
 
         GameObject controlsGO = CreateUIObject("MobileControls", hudCanvas.transform);
         RectTransform controls = controlsGO.GetComponent<RectTransform>();
@@ -170,6 +219,7 @@ public static class HUDCanvasPrefabBuilder
 
         CreateMobileButton("BotonAtaque", actionsGO.transform, MobileInputAction.Ataque, attackButtonSprite, attackIconSprite, new Vector2(-56f, 56f), new Vector2(112f, 112f), new Vector2(54f, 54f));
         CreateMobileButton("BotonSalto", actionsGO.transform, MobileInputAction.Salto, jumpButtonSprite, jumpIconSprite, new Vector2(-170f, 104f), new Vector2(112f, 112f), new Vector2(54f, 54f));
+        CreatePauseButton("BotonPausaTouch", controlsGO.transform, pauseButtonSprite, pauseIconSprite, new Vector2(-42f, -38f), new Vector2(88f, 88f), new Vector2(42f, 42f));
 
         MobileControlsUI controlsUI = hudCanvas.AddComponent<MobileControlsUI>();
         SerializedObject serializedControls = new SerializedObject(controlsUI);
@@ -180,11 +230,15 @@ public static class HUDCanvasPrefabBuilder
         serializedControls.FindProperty("spriteDerecha").objectReferenceValue = rightSprite;
         serializedControls.FindProperty("spriteBotonSalto").objectReferenceValue = jumpButtonSprite;
         serializedControls.FindProperty("spriteBotonAtaque").objectReferenceValue = attackButtonSprite;
+        serializedControls.FindProperty("spriteBotonPausa").objectReferenceValue = pauseButtonSprite;
         serializedControls.FindProperty("spriteIconoSalto").objectReferenceValue = jumpIconSprite;
         serializedControls.FindProperty("spriteIconoAtaque").objectReferenceValue = attackIconSprite;
+        serializedControls.FindProperty("spriteIconoPausa").objectReferenceValue = pauseIconSprite;
         serializedControls.FindProperty("tamanoBotonMovimiento").vector2Value = new Vector2(104f, 104f);
         serializedControls.FindProperty("tamanoBotonAccion").vector2Value = new Vector2(112f, 112f);
+        serializedControls.FindProperty("tamanoBotonPausa").vector2Value = new Vector2(88f, 88f);
         serializedControls.FindProperty("tamanoIconoAccion").vector2Value = new Vector2(54f, 54f);
+        serializedControls.FindProperty("tamanoIconoPausa").vector2Value = new Vector2(42f, 42f);
         serializedControls.FindProperty("margenHorizontal").floatValue = 42f;
         serializedControls.FindProperty("margenVertical").floatValue = 38f;
         serializedControls.ApplyModifiedPropertiesWithoutUndo();
@@ -215,13 +269,14 @@ public static class HUDCanvasPrefabBuilder
 
         CanvasGroup canvasGroup = overlayGO.AddComponent<CanvasGroup>();
 
-        GameObject cardGO = CreateCard("PauseCard", overlay, new Vector2(520f, 360f));
+        GameObject cardGO = CreateCard("PauseCard", overlay, new Vector2(520f, 430f));
         RectTransform card = cardGO.GetComponent<RectTransform>();
 
-        CreateText("Titulo", card, "Pausa", 46f, new Vector2(0f, 116f), new Vector2(460f, 64f));
-        Button continueButton = CreateButton("BotonContinuar", card, "Continuar", new Vector2(0f, 42f), new Vector2(260f, 54f));
-        Button settingsButton = CreateButton("BotonAjustes", card, "Ajustes", new Vector2(0f, -26f), new Vector2(260f, 54f));
-        Button restartButton = CreateButton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -94f), new Vector2(260f, 54f));
+        CreateText("Titulo", card, "Pausa", 46f, new Vector2(0f, 150f), new Vector2(460f, 64f));
+        Button continueButton = CreateButton("BotonContinuar", card, "Continuar", new Vector2(0f, 72f), new Vector2(260f, 54f));
+        Button settingsButton = CreateButton("BotonAjustes", card, "Ajustes", new Vector2(0f, 4f), new Vector2(260f, 54f));
+        Button restartButton = CreateButton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -64f), new Vector2(260f, 54f));
+        Button mainMenuButton = CreateButton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -132f), new Vector2(260f, 54f));
 
         GameObject settingsGO = CreateCard("SettingsCard", overlay, new Vector2(520f, 380f));
         RectTransform settingsCard = settingsGO.GetComponent<RectTransform>();
@@ -242,6 +297,7 @@ public static class HUDCanvasPrefabBuilder
         serializedScreen.FindProperty("botonContinuar").objectReferenceValue = continueButton;
         serializedScreen.FindProperty("botonAjustes").objectReferenceValue = settingsButton;
         serializedScreen.FindProperty("botonReiniciar").objectReferenceValue = restartButton;
+        serializedScreen.FindProperty("botonMenuPrincipal").objectReferenceValue = mainMenuButton;
         serializedScreen.FindProperty("botonVolverAjustes").objectReferenceValue = backButton;
         serializedScreen.FindProperty("sliderVolumen").objectReferenceValue = volumeSlider;
         serializedScreen.FindProperty("textoValorVolumen").objectReferenceValue = volumeValueText;
@@ -256,6 +312,8 @@ public static class HUDCanvasPrefabBuilder
         serializedScreen.FindProperty("teclaPausa").intValue = (int)KeyCode.Escape;
         serializedScreen.FindProperty("teclaPausaAlternativa").intValue = (int)KeyCode.P;
         serializedScreen.FindProperty("pausarTiempo").boolValue = true;
+        serializedScreen.FindProperty("nombreEscenaMenuPrincipal").stringValue = "MainMenu";
+        serializedScreen.FindProperty("rutaEscenaMenuPrincipalEditor").stringValue = "Assets/Scenes/MainMenu.unity";
         serializedScreen.ApplyModifiedPropertiesWithoutUndo();
 
         overlayGO.SetActive(false);
@@ -530,6 +588,78 @@ public static class HUDCanvasPrefabBuilder
 
         if(iconSprite == null)
         {
+            CreatePauseBars(buttonGO.transform);
+            return;
+        }
+
+        GameObject iconGO = CreateUIObject("Icono", buttonGO.transform);
+        RectTransform icon = iconGO.GetComponent<RectTransform>();
+        icon.anchorMin = new Vector2(0.5f, 0.5f);
+        icon.anchorMax = new Vector2(0.5f, 0.5f);
+        icon.pivot = new Vector2(0.5f, 0.5f);
+        icon.anchoredPosition = Vector2.zero;
+        icon.sizeDelta = iconSize;
+
+        Image iconImage = iconGO.AddComponent<Image>();
+        iconImage.sprite = iconSprite;
+        iconImage.preserveAspect = true;
+        iconImage.raycastTarget = false;
+    }
+
+    private static void CreatePauseBars(Transform parent)
+    {
+        CreatePauseBar("BarraIzquierda", parent, new Vector2(-8f, 0f));
+        CreatePauseBar("BarraDerecha", parent, new Vector2(8f, 0f));
+    }
+
+    private static void CreatePauseBar(string name, Transform parent, Vector2 position)
+    {
+        GameObject barGO = CreateUIObject(name, parent);
+        RectTransform bar = barGO.GetComponent<RectTransform>();
+        bar.anchorMin = new Vector2(0.5f, 0.5f);
+        bar.anchorMax = new Vector2(0.5f, 0.5f);
+        bar.pivot = new Vector2(0.5f, 0.5f);
+        bar.anchoredPosition = position;
+        bar.sizeDelta = new Vector2(10f, 34f);
+
+        Image image = barGO.AddComponent<Image>();
+        image.color = Color.white;
+        image.raycastTarget = false;
+    }
+
+    private static void CreatePauseButton(
+        string name,
+        Transform parent,
+        Sprite backgroundSprite,
+        Sprite iconSprite,
+        Vector2 position,
+        Vector2 size,
+        Vector2 iconSize)
+    {
+        GameObject buttonGO = CreateUIObject(name, parent);
+        RectTransform rectTransform = buttonGO.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(1f, 1f);
+        rectTransform.anchorMax = new Vector2(1f, 1f);
+        rectTransform.pivot = new Vector2(1f, 1f);
+        rectTransform.anchoredPosition = position;
+        rectTransform.sizeDelta = size;
+
+        Image background = buttonGO.AddComponent<Image>();
+        background.sprite = backgroundSprite;
+        background.preserveAspect = true;
+        background.raycastTarget = true;
+        background.color = new Color(1f, 1f, 1f, 0.72f);
+
+        Button button = buttonGO.AddComponent<Button>();
+        button.targetGraphic = background;
+
+        ColorBlock colors = button.colors;
+        colors.highlightedColor = new Color(1f, 1f, 1f, 0.9f);
+        colors.pressedColor = new Color(1f, 1f, 1f, 0.55f);
+        button.colors = colors;
+
+        if(iconSprite == null)
+        {
             return;
         }
 
@@ -565,5 +695,17 @@ public static class HUDCanvasPrefabBuilder
         }
 
         return sprite;
+    }
+
+    private static AudioClip LoadAudioClip(string path)
+    {
+        AudioClip audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+
+        if(audioClip == null)
+        {
+            Debug.LogWarning("No se encontro el audio: " + path);
+        }
+
+        return audioClip;
     }
 }

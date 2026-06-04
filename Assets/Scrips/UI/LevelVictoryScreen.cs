@@ -66,6 +66,8 @@ public class LevelVictoryScreen : MonoBehaviour
         }
 
         visible = true;
+        GameAudioManager.DetenerMusicaFondo();
+        GameAudioManager.ReproducirVictoria();
 
         if(textoTitulo != null)
         {
@@ -220,6 +222,8 @@ public class LevelVictoryScreen : MonoBehaviour
             return;
         }
 
+        boton.onClick.RemoveListener(GameAudioManager.ReproducirClickUI);
+        boton.onClick.AddListener(GameAudioManager.ReproducirClickUI);
         boton.onClick.RemoveListener(accion);
         boton.onClick.AddListener(accion);
     }
