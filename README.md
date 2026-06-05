@@ -26,7 +26,7 @@ The project separates responsibilities into small, reusable scripts:
 - `Enemies`: base enemy, patrol movement, contact damage, stomping, and animations.
 - `Collectibles`: coins and health.
 - `Breakables`: breakable objects and drop system.
-- `Hazards`: traps and area-of-effect (AoE).
+- `Hazards`: traps and area-of-effect.
 - `UI`: HUD, pause, settings, victory, defeat, main menu, and mobile controls.
 - `Audio`: centralized manager for music and SFX.
 - `Level`: final goal, camera, and parallax.
