@@ -166,3 +166,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CoinCollectible
   valor: 5
   sonidoRecolectar: {fileID: 8300000, guid: 4ea5d23c1c606e84d99fc39ab1d2b999, type: 3}
+  spritesEfectoRecolectar:
+  - {fileID: -6046745792503860955, guid: af7c11eaa71edf34e9630fe43654bffa, type: 3}
+  - {fileID: 3726720400457837281, guid: 86015304662b3684788fd8230e012d9c, type: 3}
+  - {fileID: 4293792207399142726, guid: 6eb01169d011ae84aa1496a43bb49669, type: 3}
+  - {fileID: -4226920687930284943, guid: 7172df08a5b9d4b4fb8de2fc88ef9e6e, type: 3}
+  cuadrosPorSegundoEfecto: 18
+  offsetEfecto: {x: 0, y: 0.05, z: 0}
+  ordenExtraEfecto: 2
