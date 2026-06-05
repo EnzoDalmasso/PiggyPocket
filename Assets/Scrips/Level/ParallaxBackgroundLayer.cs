@@ -3,6 +3,7 @@ using UnityEngine;
 
 // Capa individual de fondo con parallax.
 // Se coloca en un GameObject con SpriteRenderer y se mueve segun la camara.
+[DefaultExecutionOrder(1000)]
 [RequireComponent(typeof(SpriteRenderer))]
 public class ParallaxBackgroundLayer : MonoBehaviour
 {
@@ -149,17 +150,13 @@ public class ParallaxBackgroundLayer : MonoBehaviour
         float centroCapa = posicionBaseX + anchoMundo * 0.5f + offsetRepeticionX;
         float distanciaCamara = camara.position.x - centroCapa;
 
-        while(distanciaCamara > anchoMundo)
+        if(Mathf.Abs(distanciaCamara) <= anchoMundo)
         {
-            offsetRepeticionX += anchoMundo;
-            distanciaCamara -= anchoMundo;
+            return offsetRepeticionX;
         }
 
-        while(distanciaCamara < -anchoMundo)
-        {
-            offsetRepeticionX -= anchoMundo;
-            distanciaCamara += anchoMundo;
-        }
+        float saltos = Mathf.Round(distanciaCamara / anchoMundo);
+        offsetRepeticionX += anchoMundo * saltos;
 
         return offsetRepeticionX;
     }

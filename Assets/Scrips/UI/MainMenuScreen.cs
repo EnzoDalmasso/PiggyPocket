@@ -16,6 +16,7 @@ public class MainMenuScreen : MonoBehaviour
     private const string MainPanelPath = "MenuRoot/MainPanel";
     private const string SettingsPanelPath = "MenuRoot/SettingsPanel";
     private const string CreditsPanelPath = "MenuRoot/CreditsPanel";
+    private const string ControlsPanelPath = "MenuRoot/ControlsPanel";
     private const string VolumenKey = "PiggyPocket_VolumenGeneral";
     private const string SilencioKey = "PiggyPocket_AudioSilenciado";
 
@@ -28,12 +29,15 @@ public class MainMenuScreen : MonoBehaviour
     [SerializeField] private GameObject panelPrincipal;
     [SerializeField] private GameObject panelAjustes;
     [SerializeField] private GameObject panelCreditos;
+    [SerializeField] private GameObject panelControles;
     [SerializeField] private Button botonJugar;
     [SerializeField] private Button botonAjustes;
+    [SerializeField] private Button botonControles;
     [SerializeField] private Button botonCreditos;
     [SerializeField] private Button botonSalir;
     [SerializeField] private Button botonVolverAjustes;
     [SerializeField] private Button botonVolverCreditos;
+    [SerializeField] private Button botonVolverControles;
     [SerializeField] private Slider sliderVolumen;
     [SerializeField] private TMP_Text textoValorVolumen;
     [SerializeField] private Toggle toggleSilencio;
@@ -102,6 +106,11 @@ public class MainMenuScreen : MonoBehaviour
         ActivarPanel(panelCreditos);
     }
 
+    public void MostrarControles()
+    {
+        ActivarPanel(panelControles);
+    }
+
     public void Salir()
     {
 #if UNITY_EDITOR
@@ -139,6 +148,11 @@ public class MainMenuScreen : MonoBehaviour
             panelCreditos = BuscarGameObject(CreditsPanelPath);
         }
 
+        if(panelControles == null)
+        {
+            panelControles = BuscarGameObject(ControlsPanelPath);
+        }
+
         if(botonJugar == null)
         {
             botonJugar = BuscarComponente<Button>(MainPanelPath + "/BotonJugar");
@@ -147,6 +161,11 @@ public class MainMenuScreen : MonoBehaviour
         if(botonAjustes == null)
         {
             botonAjustes = BuscarComponente<Button>(MainPanelPath + "/BotonAjustes");
+        }
+
+        if(botonControles == null)
+        {
+            botonControles = BuscarComponente<Button>(MainPanelPath + "/BotonControles");
         }
 
         if(botonCreditos == null)
@@ -169,6 +188,11 @@ public class MainMenuScreen : MonoBehaviour
             botonVolverCreditos = BuscarComponente<Button>(CreditsPanelPath + "/BotonVolver");
         }
 
+        if(botonVolverControles == null)
+        {
+            botonVolverControles = BuscarComponente<Button>(ControlsPanelPath + "/BotonVolver");
+        }
+
         if(sliderVolumen == null)
         {
             sliderVolumen = BuscarComponente<Slider>(SettingsPanelPath + "/SliderVolumen");
@@ -183,16 +207,21 @@ public class MainMenuScreen : MonoBehaviour
         {
             toggleSilencio = BuscarComponente<Toggle>(SettingsPanelPath + "/ToggleSilencio");
         }
+
+        AsegurarPanelControles();
+        AsegurarBotonControles();
     }
 
     private void ConfigurarBotones()
     {
         ConfigurarBoton(botonJugar, Jugar);
         ConfigurarBoton(botonAjustes, MostrarAjustes);
+        ConfigurarBoton(botonControles, MostrarControles);
         ConfigurarBoton(botonCreditos, MostrarCreditos);
         ConfigurarBoton(botonSalir, Salir);
         ConfigurarBoton(botonVolverAjustes, MostrarPrincipal);
         ConfigurarBoton(botonVolverCreditos, MostrarPrincipal);
+        ConfigurarBoton(botonVolverControles, MostrarPrincipal);
     }
 
     private void ConfigurarAjustes()
@@ -252,6 +281,11 @@ public class MainMenuScreen : MonoBehaviour
         if(panelCreditos != null)
         {
             panelCreditos.SetActive(panelActivo == panelCreditos);
+        }
+
+        if(panelControles != null)
+        {
+            panelControles.SetActive(panelActivo == panelControles);
         }
     }
 
@@ -329,15 +363,16 @@ public class MainMenuScreen : MonoBehaviour
         Image background = menuRoot.AddComponent<Image>();
         background.color = new Color(0.28f, 0.76f, 0.9f, 1f);
 
-        panelPrincipal = CrearCard("MainPanel", menuRoot.transform, new Vector2(620f, 520f));
+        panelPrincipal = CrearCard("MainPanel", menuRoot.transform, new Vector2(620f, 590f));
         RectTransform mainCard = panelPrincipal.GetComponent<RectTransform>();
 
-        CrearTexto("Titulo", mainCard, "PiggyPocket", 58f, new Vector2(0f, 178f), new Vector2(540f, 72f));
-        CrearTexto("Subtitulo", mainCard, "Recolecta monedas y llega a la meta", 24f, new Vector2(0f, 122f), new Vector2(520f, 40f));
-        botonJugar = CrearBoton("BotonJugar", mainCard, "Jugar", new Vector2(0f, 50f), new Vector2(270f, 56f));
-        botonAjustes = CrearBoton("BotonAjustes", mainCard, "Ajustes", new Vector2(0f, -20f), new Vector2(270f, 56f));
-        botonCreditos = CrearBoton("BotonCreditos", mainCard, "Creditos", new Vector2(0f, -90f), new Vector2(270f, 56f));
-        botonSalir = CrearBoton("BotonSalir", mainCard, "Salir", new Vector2(0f, -160f), new Vector2(270f, 56f));
+        CrearTexto("Titulo", mainCard, "PiggyPocket", 58f, new Vector2(0f, 210f), new Vector2(540f, 72f));
+        CrearTexto("Subtitulo", mainCard, "Recolecta monedas y llega a la meta", 24f, new Vector2(0f, 154f), new Vector2(520f, 40f));
+        botonJugar = CrearBoton("BotonJugar", mainCard, "Jugar", new Vector2(0f, 84f), new Vector2(270f, 56f));
+        botonAjustes = CrearBoton("BotonAjustes", mainCard, "Ajustes", new Vector2(0f, 14f), new Vector2(270f, 56f));
+        botonControles = CrearBoton("BotonControles", mainCard, "Controles", new Vector2(0f, -56f), new Vector2(270f, 56f));
+        botonCreditos = CrearBoton("BotonCreditos", mainCard, "Creditos", new Vector2(0f, -126f), new Vector2(270f, 56f));
+        botonSalir = CrearBoton("BotonSalir", mainCard, "Salir", new Vector2(0f, -196f), new Vector2(270f, 56f));
 
         panelAjustes = CrearCard("SettingsPanel", menuRoot.transform, new Vector2(560f, 380f));
         RectTransform settingsCard = panelAjustes.GetComponent<RectTransform>();
@@ -356,6 +391,8 @@ public class MainMenuScreen : MonoBehaviour
         TMP_Text creditsText = CrearTexto("TextoCreditos", creditsCard, textoCreditos, 22f, new Vector2(0f, 22f), new Vector2(650f, 220f));
         creditsText.textWrappingMode = TextWrappingModes.Normal;
         botonVolverCreditos = CrearBoton("BotonVolver", creditsCard, "Volver", new Vector2(0f, -166f), new Vector2(220f, 54f));
+
+        panelControles = ControlsHelpPanelFactory.CrearPanelControles("ControlsPanel", menuRoot.transform, new Vector2(760f, 440f), out botonVolverControles);
     }
 
     private void LimpiarUIExistente()
@@ -380,12 +417,15 @@ public class MainMenuScreen : MonoBehaviour
         panelPrincipal = null;
         panelAjustes = null;
         panelCreditos = null;
+        panelControles = null;
         botonJugar = null;
         botonAjustes = null;
+        botonControles = null;
         botonCreditos = null;
         botonSalir = null;
         botonVolverAjustes = null;
         botonVolverCreditos = null;
+        botonVolverControles = null;
         sliderVolumen = null;
         textoValorVolumen = null;
         toggleSilencio = null;
@@ -431,6 +471,64 @@ public class MainMenuScreen : MonoBehaviour
     {
         Transform encontrado = transform.Find(ruta);
         return encontrado != null ? encontrado.GetComponent<T>() : null;
+    }
+
+    private void AsegurarPanelControles()
+    {
+        if(panelControles != null || menuRoot == null)
+        {
+            return;
+        }
+
+        panelControles = ControlsHelpPanelFactory.CrearPanelControles("ControlsPanel", menuRoot.transform, new Vector2(760f, 440f), out botonVolverControles);
+    }
+
+    private void AsegurarBotonControles()
+    {
+        if(panelPrincipal == null)
+        {
+            return;
+        }
+
+        if(botonControles == null)
+        {
+            RectTransform mainCard = panelPrincipal.GetComponent<RectTransform>();
+
+            if(mainCard != null)
+            {
+                mainCard.sizeDelta = new Vector2(620f, 590f);
+            }
+
+            ReubicarBoton(botonJugar, new Vector2(0f, 84f));
+            ReubicarBoton(botonAjustes, new Vector2(0f, 14f));
+            ReubicarBoton(botonCreditos, new Vector2(0f, -126f));
+            ReubicarBoton(botonSalir, new Vector2(0f, -196f));
+            botonControles = CrearBoton("BotonControles", panelPrincipal.transform, "Controles", new Vector2(0f, -56f), new Vector2(270f, 56f));
+        }
+        else
+        {
+            ActualizarTextoBoton(botonControles, "Controles");
+        }
+    }
+
+    private static void ReubicarBoton(Button boton, Vector2 posicion)
+    {
+        RectTransform rectTransform = boton != null ? boton.GetComponent<RectTransform>() : null;
+
+        if(rectTransform != null)
+        {
+            rectTransform.anchoredPosition = posicion;
+        }
+    }
+
+    private static void ActualizarTextoBoton(Button boton, string contenido)
+    {
+        TMP_Text texto = boton != null ? boton.GetComponentInChildren<TMP_Text>() : null;
+
+        if(texto != null)
+        {
+            texto.text = contenido;
+        }
     }
 
     private static GameObject CrearUIObject(string nombre, Transform padre)
@@ -616,6 +714,162 @@ public class MainMenuScreen : MonoBehaviour
         toggle.isOn = false;
 
         return toggle;
+    }
+
+    private static void StretchCompleto(RectTransform rectTransform)
+    {
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+    }
+}
+
+// Crea un panel simple de controles reutilizable por MainMenu y HUDCanvas.
+// El diseno puede modificarse despues desde Unity; esto asegura que la navegacion funcione.
+public static class ControlsHelpPanelFactory
+{
+    private const string TextoPCWeb =
+        "A / D o Flechas: moverse\n" +
+        "Space: saltar\n" +
+        "J o Click: atacar\n" +
+        "Esc o P: pausa";
+
+    private const string TextoMobile =
+        "Flechas tactiles: moverse\n" +
+        "Boton salto: saltar\n" +
+        "Boton ataque: atacar\n" +
+        "Boton pausa: pausa";
+
+    public static GameObject CrearPanelControles(string nombre, Transform padre, Vector2 tamano, out Button botonVolver)
+    {
+        GameObject panelGO = CrearCard(nombre, padre, tamano);
+        RectTransform panel = panelGO.GetComponent<RectTransform>();
+
+        CrearTexto("Titulo", panel, "Controles", 44f, new Vector2(0f, 150f), new Vector2(tamano.x - 80f, 58f), TextAlignmentOptions.Center);
+
+        CrearSeccion(
+            "PCWeb",
+            panel,
+            "PC / Web",
+            TextoPCWeb,
+            new Vector2(-tamano.x * 0.24f, 24f),
+            new Vector2(tamano.x * 0.38f, 210f));
+
+        CrearSeccion(
+            "Mobile",
+            panel,
+            "Celular",
+            TextoMobile,
+            new Vector2(tamano.x * 0.24f, 24f),
+            new Vector2(tamano.x * 0.38f, 210f));
+
+        botonVolver = CrearBoton("BotonVolver", panel, "Volver", new Vector2(0f, -154f), new Vector2(220f, 54f));
+        panelGO.SetActive(false);
+
+        return panelGO;
+    }
+
+    private static void CrearSeccion(string nombre, Transform padre, string titulo, string contenido, Vector2 posicion, Vector2 tamano)
+    {
+        GameObject sectionGO = CrearUIObject(nombre, padre);
+        RectTransform section = sectionGO.GetComponent<RectTransform>();
+        section.anchorMin = new Vector2(0.5f, 0.5f);
+        section.anchorMax = new Vector2(0.5f, 0.5f);
+        section.pivot = new Vector2(0.5f, 0.5f);
+        section.anchoredPosition = posicion;
+        section.sizeDelta = tamano;
+
+        Image sectionImage = sectionGO.AddComponent<Image>();
+        sectionImage.color = new Color(1f, 1f, 1f, 0.24f);
+        sectionImage.raycastTarget = false;
+
+        CrearTexto("Titulo", section, titulo, 28f, new Vector2(0f, 72f), new Vector2(tamano.x - 28f, 38f), TextAlignmentOptions.Center);
+        TMP_Text body = CrearTexto("Texto", section, contenido, 23f, new Vector2(0f, -20f), new Vector2(tamano.x - 34f, 126f), TextAlignmentOptions.Left);
+        body.textWrappingMode = TextWrappingModes.Normal;
+        body.lineSpacing = 12f;
+    }
+
+    private static GameObject CrearCard(string nombre, Transform padre, Vector2 tamano)
+    {
+        GameObject cardGO = CrearUIObject(nombre, padre);
+        RectTransform card = cardGO.GetComponent<RectTransform>();
+        card.anchorMin = new Vector2(0.5f, 0.5f);
+        card.anchorMax = new Vector2(0.5f, 0.5f);
+        card.pivot = new Vector2(0.5f, 0.5f);
+        card.anchoredPosition = Vector2.zero;
+        card.sizeDelta = tamano;
+
+        Image cardImage = cardGO.AddComponent<Image>();
+        cardImage.color = new Color(0.96f, 0.91f, 0.72f, 1f);
+        cardImage.raycastTarget = true;
+
+        return cardGO;
+    }
+
+    private static TMP_Text CrearTexto(string nombre, Transform padre, string contenido, float fontSize, Vector2 posicion, Vector2 tamano, TextAlignmentOptions alineacion)
+    {
+        GameObject textGO = CrearUIObject(nombre, padre);
+        RectTransform rectTransform = textGO.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = posicion;
+        rectTransform.sizeDelta = tamano;
+
+        TMP_Text texto = textGO.AddComponent<TextMeshProUGUI>();
+        texto.text = contenido;
+        texto.fontSize = fontSize;
+        texto.color = new Color(0.12f, 0.11f, 0.09f, 1f);
+        texto.alignment = alineacion;
+        texto.textWrappingMode = TextWrappingModes.NoWrap;
+        texto.raycastTarget = false;
+
+        return texto;
+    }
+
+    private static Button CrearBoton(string nombre, Transform padre, string contenido, Vector2 posicion, Vector2 tamano)
+    {
+        GameObject buttonGO = CrearUIObject(nombre, padre);
+        RectTransform rectTransform = buttonGO.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = posicion;
+        rectTransform.sizeDelta = tamano;
+
+        Image image = buttonGO.AddComponent<Image>();
+        image.color = new Color(0.93f, 0.55f, 0.18f, 1f);
+
+        Button boton = buttonGO.AddComponent<Button>();
+        boton.targetGraphic = image;
+
+        ColorBlock colors = boton.colors;
+        colors.highlightedColor = new Color(1f, 0.66f, 0.26f, 1f);
+        colors.pressedColor = new Color(0.78f, 0.38f, 0.11f, 1f);
+        boton.colors = colors;
+
+        GameObject labelGO = CrearUIObject("Texto", buttonGO.transform);
+        RectTransform labelRect = labelGO.GetComponent<RectTransform>();
+        StretchCompleto(labelRect);
+
+        TMP_Text label = labelGO.AddComponent<TextMeshProUGUI>();
+        label.text = contenido;
+        label.fontSize = 24f;
+        label.color = Color.white;
+        label.alignment = TextAlignmentOptions.Center;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.raycastTarget = false;
+
+        return boton;
+    }
+
+    private static GameObject CrearUIObject(string nombre, Transform padre)
+    {
+        GameObject go = new GameObject(nombre, typeof(RectTransform));
+        go.layer = LayerMask.NameToLayer("UI");
+        go.transform.SetParent(padre, false);
+        return go;
     }
 
     private static void StretchCompleto(RectTransform rectTransform)

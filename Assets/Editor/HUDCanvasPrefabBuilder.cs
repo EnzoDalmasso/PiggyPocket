@@ -1,6 +1,7 @@
 using TMPro;
 using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -269,14 +270,15 @@ public static class HUDCanvasPrefabBuilder
 
         CanvasGroup canvasGroup = overlayGO.AddComponent<CanvasGroup>();
 
-        GameObject cardGO = CreateCard("PauseCard", overlay, new Vector2(520f, 430f));
+        GameObject cardGO = CreateCard("PauseCard", overlay, new Vector2(520f, 500f));
         RectTransform card = cardGO.GetComponent<RectTransform>();
 
-        CreateText("Titulo", card, "Pausa", 46f, new Vector2(0f, 150f), new Vector2(460f, 64f));
-        Button continueButton = CreateButton("BotonContinuar", card, "Continuar", new Vector2(0f, 72f), new Vector2(260f, 54f));
-        Button settingsButton = CreateButton("BotonAjustes", card, "Ajustes", new Vector2(0f, 4f), new Vector2(260f, 54f));
-        Button restartButton = CreateButton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -64f), new Vector2(260f, 54f));
-        Button mainMenuButton = CreateButton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -132f), new Vector2(260f, 54f));
+        CreateText("Titulo", card, "Pausa", 46f, new Vector2(0f, 182f), new Vector2(460f, 64f));
+        Button continueButton = CreateButton("BotonContinuar", card, "Continuar", new Vector2(0f, 102f), new Vector2(260f, 54f));
+        Button settingsButton = CreateButton("BotonAjustes", card, "Ajustes", new Vector2(0f, 34f), new Vector2(260f, 54f));
+        Button controlsButton = CreateButton("BotonControles", card, "Controles", new Vector2(0f, -34f), new Vector2(260f, 54f));
+        Button restartButton = CreateButton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -102f), new Vector2(260f, 54f));
+        Button mainMenuButton = CreateButton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -170f), new Vector2(260f, 54f));
 
         GameObject settingsGO = CreateCard("SettingsCard", overlay, new Vector2(520f, 380f));
         RectTransform settingsCard = settingsGO.GetComponent<RectTransform>();
@@ -288,17 +290,22 @@ public static class HUDCanvasPrefabBuilder
         Button backButton = CreateButton("BotonVolver", settingsCard, "Volver", new Vector2(0f, -128f), new Vector2(220f, 54f));
         settingsGO.SetActive(false);
 
+        GameObject controlsGO = ControlsHelpPanelFactory.CrearPanelControles("ControlsCard", overlay, new Vector2(760f, 440f), out Button controlsBackButton);
+
         PauseMenuScreen pauseScreen = hudCanvas.AddComponent<PauseMenuScreen>();
         SerializedObject serializedScreen = new SerializedObject(pauseScreen);
         serializedScreen.FindProperty("panelPausa").objectReferenceValue = overlayGO;
         serializedScreen.FindProperty("canvasGroup").objectReferenceValue = canvasGroup;
         serializedScreen.FindProperty("menuPrincipal").objectReferenceValue = cardGO;
         serializedScreen.FindProperty("panelAjustes").objectReferenceValue = settingsGO;
+        serializedScreen.FindProperty("panelControles").objectReferenceValue = controlsGO;
         serializedScreen.FindProperty("botonContinuar").objectReferenceValue = continueButton;
         serializedScreen.FindProperty("botonAjustes").objectReferenceValue = settingsButton;
+        serializedScreen.FindProperty("botonControles").objectReferenceValue = controlsButton;
         serializedScreen.FindProperty("botonReiniciar").objectReferenceValue = restartButton;
         serializedScreen.FindProperty("botonMenuPrincipal").objectReferenceValue = mainMenuButton;
         serializedScreen.FindProperty("botonVolverAjustes").objectReferenceValue = backButton;
+        serializedScreen.FindProperty("botonVolverControles").objectReferenceValue = controlsBackButton;
         serializedScreen.FindProperty("sliderVolumen").objectReferenceValue = volumeSlider;
         serializedScreen.FindProperty("textoValorVolumen").objectReferenceValue = volumeValueText;
         serializedScreen.FindProperty("toggleSilencio").objectReferenceValue = muteToggle;
@@ -707,5 +714,298 @@ public static class HUDCanvasPrefabBuilder
         }
 
         return audioClip;
+    }
+}
+
+public static class ControlsHelpPanelApplier
+{
+    private const string MainMenuScenePath = "Assets/Scenes/MainMenu.unity";
+    private const string HUDCanvasPath = "Assets/Prefabs/UI/HUDCanvas.prefab";
+
+    [MenuItem("PiggyPocket/UI/Aplicar Panel Controles A Todo")]
+    public static void ApplyControlsToAll()
+    {
+        ApplyControlsToMainMenu();
+        ApplyControlsToHUDCanvas();
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        Debug.Log("Panel de controles aplicado en MainMenu y HUDCanvas.");
+    }
+
+    [MenuItem("PiggyPocket/UI/Aplicar Panel Controles A MainMenu")]
+    public static void ApplyControlsToMainMenu()
+    {
+        if(!File.Exists(MainMenuScenePath))
+        {
+            Debug.LogError("No se encontro la escena MainMenu en " + MainMenuScenePath);
+            return;
+        }
+
+        EditorSceneManager.OpenScene(MainMenuScenePath);
+
+        MainMenuScreen mainMenu = Object.FindFirstObjectByType<MainMenuScreen>(FindObjectsInactive.Include);
+
+        if(mainMenu == null)
+        {
+            Debug.LogError("No se encontro MainMenuScreen en MainMenu.");
+            return;
+        }
+
+        Transform menuRoot = mainMenu.transform.Find("MenuRoot");
+        Transform mainPanel = menuRoot != null ? menuRoot.Find("MainPanel") : null;
+
+        if(menuRoot == null || mainPanel == null)
+        {
+            Debug.LogError("MainMenu no tiene MenuRoot/MainPanel. No se puede aplicar el panel de controles sin reconstruir el menu.");
+            return;
+        }
+
+        Button controlsButton = EnsureButton(mainPanel, "BotonControles", "Controles", new Vector2(0f, -56f), new Vector2(270f, 56f), mainPanel.Find("BotonAjustes")?.GetComponent<Button>());
+        LayoutMainMenuButtons(mainPanel, controlsButton);
+
+        GameObject controlsPanel = EnsureControlsPanel(menuRoot, "ControlsPanel", new Vector2(760f, 440f), out Button backButton);
+        controlsPanel.SetActive(false);
+
+        SerializedObject serializedMenu = new SerializedObject(mainMenu);
+        SetReference(serializedMenu, "panelControles", controlsPanel);
+        SetReference(serializedMenu, "botonControles", controlsButton);
+        SetReference(serializedMenu, "botonVolverControles", backButton);
+        serializedMenu.ApplyModifiedPropertiesWithoutUndo();
+
+        EditorUtility.SetDirty(mainMenu);
+        EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+        Debug.Log("Panel de controles materializado en MainMenu.");
+    }
+
+    [MenuItem("PiggyPocket/UI/Aplicar Panel Controles A HUDCanvas")]
+    public static void ApplyControlsToHUDCanvas()
+    {
+        GameObject hudCanvas = PrefabUtility.LoadPrefabContents(HUDCanvasPath);
+
+        try
+        {
+            Transform overlay = hudCanvas.transform.Find("PauseOverlay");
+            Transform pauseCard = hudCanvas.transform.Find("PauseOverlay/PauseCard");
+
+            if(overlay == null || pauseCard == null)
+            {
+                Debug.LogError("HUDCanvas no tiene PauseOverlay/PauseCard. No se puede aplicar el panel de controles.");
+                return;
+            }
+
+            Button controlsButton = EnsureButton(pauseCard, "BotonControles", "Controles", new Vector2(0f, -34f), new Vector2(260f, 54f), pauseCard.Find("BotonAjustes")?.GetComponent<Button>());
+            LayoutPauseButtons(pauseCard, controlsButton);
+
+            GameObject controlsPanel = EnsureControlsPanel(overlay, "ControlsCard", new Vector2(760f, 440f), out Button backButton);
+            controlsPanel.SetActive(false);
+
+            PauseMenuScreen pauseScreen = hudCanvas.GetComponent<PauseMenuScreen>();
+
+            if(pauseScreen == null)
+            {
+                pauseScreen = hudCanvas.AddComponent<PauseMenuScreen>();
+            }
+
+            SerializedObject serializedPause = new SerializedObject(pauseScreen);
+            SetReference(serializedPause, "panelControles", controlsPanel);
+            SetReference(serializedPause, "botonControles", controlsButton);
+            SetReference(serializedPause, "botonVolverControles", backButton);
+            serializedPause.ApplyModifiedPropertiesWithoutUndo();
+
+            PrefabUtility.SaveAsPrefabAsset(hudCanvas, HUDCanvasPath);
+            Debug.Log("Panel de controles materializado en HUDCanvas.");
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(hudCanvas);
+        }
+    }
+
+    private static GameObject EnsureControlsPanel(Transform parent, string name, Vector2 size, out Button backButton)
+    {
+        Transform existing = parent.Find(name);
+
+        if(existing != null)
+        {
+            backButton = existing.Find("BotonVolver")?.GetComponent<Button>();
+
+            if(backButton != null)
+            {
+                ClearButtonEvents(backButton);
+            }
+
+            return existing.gameObject;
+        }
+
+        return ControlsHelpPanelFactory.CrearPanelControles(name, parent, size, out backButton);
+    }
+
+    private static Button EnsureButton(Transform parent, string name, string text, Vector2 position, Vector2 size, Button template)
+    {
+        Transform existing = parent.Find(name);
+
+        if(existing != null)
+        {
+            Button existingButton = existing.GetComponent<Button>();
+            UpdateButton(existingButton, text, position, size);
+            return existingButton;
+        }
+
+        Button button;
+
+        if(template != null)
+        {
+            GameObject clone = Object.Instantiate(template.gameObject, parent, false);
+            clone.name = name;
+            button = clone.GetComponent<Button>();
+        }
+        else
+        {
+            button = CreateButton(name, parent);
+        }
+
+        UpdateButton(button, text, position, size);
+        ClearButtonEvents(button);
+        return button;
+    }
+
+    private static Button CreateButton(string name, Transform parent)
+    {
+        GameObject buttonGO = new GameObject(name, typeof(RectTransform));
+        buttonGO.layer = LayerMask.NameToLayer("UI");
+        buttonGO.transform.SetParent(parent, false);
+
+        Image image = buttonGO.AddComponent<Image>();
+        image.color = new Color(0.93f, 0.55f, 0.18f, 1f);
+
+        Button button = buttonGO.AddComponent<Button>();
+        button.targetGraphic = image;
+
+        GameObject labelGO = new GameObject("Texto", typeof(RectTransform));
+        labelGO.layer = LayerMask.NameToLayer("UI");
+        labelGO.transform.SetParent(buttonGO.transform, false);
+
+        RectTransform labelRect = labelGO.GetComponent<RectTransform>();
+        StretchFull(labelRect);
+
+        TMP_Text label = labelGO.AddComponent<TextMeshProUGUI>();
+        label.fontSize = 24f;
+        label.color = Color.white;
+        label.alignment = TextAlignmentOptions.Center;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.raycastTarget = false;
+
+        return button;
+    }
+
+    private static void UpdateButton(Button button, string text, Vector2 position, Vector2 size)
+    {
+        if(button == null)
+        {
+            return;
+        }
+
+        RectTransform rect = button.GetComponent<RectTransform>();
+
+        if(rect != null)
+        {
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+        }
+
+        TMP_Text label = button.GetComponentInChildren<TMP_Text>();
+
+        if(label != null)
+        {
+            label.text = text;
+        }
+    }
+
+    private static void LayoutMainMenuButtons(Transform mainPanel, Button controlsButton)
+    {
+        RectTransform panelRect = mainPanel.GetComponent<RectTransform>();
+
+        if(panelRect != null)
+        {
+            panelRect.sizeDelta = new Vector2(Mathf.Max(panelRect.sizeDelta.x, 620f), Mathf.Max(panelRect.sizeDelta.y, 590f));
+        }
+
+        SetButtonPosition(mainPanel, "BotonJugar", new Vector2(0f, 84f));
+        SetButtonPosition(mainPanel, "BotonAjustes", new Vector2(0f, 14f));
+        UpdateButton(controlsButton, "Controles", new Vector2(0f, -56f), new Vector2(270f, 56f));
+        SetButtonPosition(mainPanel, "BotonCreditos", new Vector2(0f, -126f));
+        SetButtonPosition(mainPanel, "BotonSalir", new Vector2(0f, -196f));
+    }
+
+    private static void LayoutPauseButtons(Transform pauseCard, Button controlsButton)
+    {
+        RectTransform cardRect = pauseCard.GetComponent<RectTransform>();
+
+        if(cardRect != null)
+        {
+            cardRect.sizeDelta = new Vector2(Mathf.Max(cardRect.sizeDelta.x, 520f), Mathf.Max(cardRect.sizeDelta.y, 500f));
+        }
+
+        SetButtonPosition(pauseCard, "BotonContinuar", new Vector2(0f, 102f));
+        SetButtonPosition(pauseCard, "BotonAjustes", new Vector2(0f, 34f));
+        UpdateButton(controlsButton, "Controles", new Vector2(0f, -34f), new Vector2(260f, 54f));
+        SetButtonPosition(pauseCard, "BotonReiniciar", new Vector2(0f, -102f));
+        SetButtonPosition(pauseCard, "BotonMenuPrincipal", new Vector2(0f, -170f));
+    }
+
+    private static void SetButtonPosition(Transform parent, string name, Vector2 position)
+    {
+        Transform buttonTransform = parent.Find(name);
+
+        if(buttonTransform == null)
+        {
+            return;
+        }
+
+        RectTransform rect = buttonTransform.GetComponent<RectTransform>();
+
+        if(rect != null)
+        {
+            rect.anchoredPosition = position;
+        }
+    }
+
+    private static void ClearButtonEvents(Button button)
+    {
+        if(button == null)
+        {
+            return;
+        }
+
+        SerializedObject serializedButton = new SerializedObject(button);
+        SerializedProperty calls = serializedButton.FindProperty("m_OnClick.m_PersistentCalls.m_Calls");
+
+        if(calls != null)
+        {
+            calls.ClearArray();
+            serializedButton.ApplyModifiedPropertiesWithoutUndo();
+        }
+    }
+
+    private static void SetReference(SerializedObject serializedObject, string propertyName, Object value)
+    {
+        SerializedProperty property = serializedObject.FindProperty(propertyName);
+
+        if(property != null)
+        {
+            property.objectReferenceValue = value;
+        }
+    }
+
+    private static void StretchFull(RectTransform rectTransform)
+    {
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
     }
 }

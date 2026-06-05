@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Permite que un enemigo reciba dano cuando el Player cae encima.
@@ -15,6 +16,9 @@ public class EnemyStompReceiver : MonoBehaviour
     private EnemyBase enemyBase;
     private Collider2D colliderEnemigo;
     private float contadorCooldownPisoton;
+    private readonly Dictionary<Collider2D, PlayerMovement> playersPorCollider = new Dictionary<Collider2D, PlayerMovement>();
+    private readonly Dictionary<PlayerMovement, PlayerHealth> healthPorPlayer = new Dictionary<PlayerMovement, PlayerHealth>();
+    private readonly Dictionary<PlayerMovement, Rigidbody2D> rbPorPlayer = new Dictionary<PlayerMovement, Rigidbody2D>();
 
     void Awake()
     {
@@ -40,6 +44,11 @@ public class EnemyStompReceiver : MonoBehaviour
         IntentarPisoton(collision);
     }
 
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        playersPorCollider.Remove(collision.collider);
+    }
+
     private void IntentarPisoton(Collision2D collision)
     {
         if(enemyBase == null || enemyBase.EstaMuerto || contadorCooldownPisoton > 0)
@@ -47,21 +56,21 @@ public class EnemyStompReceiver : MonoBehaviour
             return;
         }
 
-        PlayerMovement playerMovement = collision.collider.GetComponentInParent<PlayerMovement>();
+        PlayerMovement playerMovement = BuscarPlayerMovement(collision.collider);
 
         if(playerMovement == null)
         {
             return;
         }
 
-        PlayerHealth playerHealth = playerMovement.GetComponent<PlayerHealth>();
+        PlayerHealth playerHealth = BuscarPlayerHealth(playerMovement);
 
         if(playerHealth != null && (playerHealth.EstaMuerto || playerHealth.EstaRecibiendoDano))
         {
             return;
         }
 
-        Rigidbody2D playerRb = playerMovement.GetComponent<Rigidbody2D>();
+        Rigidbody2D playerRb = BuscarPlayerRigidbody(playerMovement);
 
         if(playerRb == null || playerRb.linearVelocity.y > velocidadMinimaCaida)
         {
@@ -112,5 +121,59 @@ public class EnemyStompReceiver : MonoBehaviour
         }
 
         return false;
+    }
+
+    private PlayerMovement BuscarPlayerMovement(Collider2D colliderPlayer)
+    {
+        if(colliderPlayer == null)
+        {
+            return null;
+        }
+
+        if(playersPorCollider.TryGetValue(colliderPlayer, out PlayerMovement playerMovementCacheado))
+        {
+            return playerMovementCacheado;
+        }
+
+        PlayerMovement playerMovement = colliderPlayer.GetComponentInParent<PlayerMovement>();
+        playersPorCollider[colliderPlayer] = playerMovement;
+
+        return playerMovement;
+    }
+
+    private PlayerHealth BuscarPlayerHealth(PlayerMovement playerMovement)
+    {
+        if(playerMovement == null)
+        {
+            return null;
+        }
+
+        if(healthPorPlayer.TryGetValue(playerMovement, out PlayerHealth playerHealthCacheado))
+        {
+            return playerHealthCacheado;
+        }
+
+        PlayerHealth playerHealth = playerMovement.GetComponent<PlayerHealth>();
+        healthPorPlayer[playerMovement] = playerHealth;
+
+        return playerHealth;
+    }
+
+    private Rigidbody2D BuscarPlayerRigidbody(PlayerMovement playerMovement)
+    {
+        if(playerMovement == null)
+        {
+            return null;
+        }
+
+        if(rbPorPlayer.TryGetValue(playerMovement, out Rigidbody2D rbCacheado))
+        {
+            return rbCacheado;
+        }
+
+        Rigidbody2D rb = playerMovement.GetComponent<Rigidbody2D>();
+        rbPorPlayer[playerMovement] = rb;
+
+        return rb;
     }
 }

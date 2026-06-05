@@ -14,6 +14,7 @@ public class PauseMenuScreen : MonoBehaviour
     private const string OverlayPath = "PauseOverlay";
     private const string CardPath = "PauseOverlay/PauseCard";
     private const string SettingsPath = "PauseOverlay/SettingsCard";
+    private const string ControlsPath = "PauseOverlay/ControlsCard";
     private const string VolumenKey = "PiggyPocket_VolumenGeneral";
     private const string SilencioKey = "PiggyPocket_AudioSilenciado";
 
@@ -22,11 +23,14 @@ public class PauseMenuScreen : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private GameObject menuPrincipal;
     [SerializeField] private GameObject panelAjustes;
+    [SerializeField] private GameObject panelControles;
     [SerializeField] private Button botonContinuar;
     [SerializeField] private Button botonAjustes;
+    [SerializeField] private Button botonControles;
     [SerializeField] private Button botonReiniciar;
     [SerializeField] private Button botonMenuPrincipal;
     [SerializeField] private Button botonVolverAjustes;
+    [SerializeField] private Button botonVolverControles;
     [SerializeField] private GameObject[] overlaysBloqueantes;
 
     [Header("Ajustes")]
@@ -142,7 +146,32 @@ public class PauseMenuScreen : MonoBehaviour
             panelAjustes.SetActive(true);
         }
 
+        if(panelControles != null)
+        {
+            panelControles.SetActive(false);
+        }
+
         RefrescarVistaAjustes();
+    }
+
+    public void MostrarControles()
+    {
+        GameAudioManager.PausarMusicaFondo();
+
+        if(menuPrincipal != null)
+        {
+            menuPrincipal.SetActive(false);
+        }
+
+        if(panelAjustes != null)
+        {
+            panelAjustes.SetActive(false);
+        }
+
+        if(panelControles != null)
+        {
+            panelControles.SetActive(true);
+        }
     }
 
     public void MostrarMenuPrincipal()
@@ -155,6 +184,11 @@ public class PauseMenuScreen : MonoBehaviour
         if(panelAjustes != null)
         {
             panelAjustes.SetActive(false);
+        }
+
+        if(panelControles != null)
+        {
+            panelControles.SetActive(false);
         }
     }
 
@@ -224,6 +258,12 @@ public class PauseMenuScreen : MonoBehaviour
             panelAjustes = settings != null ? settings.gameObject : null;
         }
 
+        if(panelControles == null)
+        {
+            Transform controls = transform.Find(ControlsPath);
+            panelControles = controls != null ? controls.gameObject : null;
+        }
+
         if(botonContinuar == null)
         {
             botonContinuar = BuscarComponente<Button>(CardPath + "/BotonContinuar");
@@ -232,6 +272,11 @@ public class PauseMenuScreen : MonoBehaviour
         if(botonAjustes == null)
         {
             botonAjustes = BuscarComponente<Button>(CardPath + "/BotonAjustes");
+        }
+
+        if(botonControles == null)
+        {
+            botonControles = BuscarComponente<Button>(CardPath + "/BotonControles");
         }
 
         if(botonReiniciar == null)
@@ -247,6 +292,11 @@ public class PauseMenuScreen : MonoBehaviour
         if(botonVolverAjustes == null)
         {
             botonVolverAjustes = BuscarComponente<Button>(SettingsPath + "/BotonVolver");
+        }
+
+        if(botonVolverControles == null)
+        {
+            botonVolverControles = BuscarComponente<Button>(ControlsPath + "/BotonVolver");
         }
 
         if(sliderVolumen == null)
@@ -272,6 +322,8 @@ public class PauseMenuScreen : MonoBehaviour
         }
 
         AsegurarBotonMenuPrincipal();
+        AsegurarPanelControles();
+        AsegurarBotonControles();
 
         if(panelPausa == null)
         {
@@ -292,14 +344,15 @@ public class PauseMenuScreen : MonoBehaviour
 
         canvasGroup = overlayGO.AddComponent<CanvasGroup>();
 
-        GameObject cardGO = CrearCard("PauseCard", overlay, new Vector2(520f, 430f));
+        GameObject cardGO = CrearCard("PauseCard", overlay, new Vector2(520f, 500f));
         RectTransform card = cardGO.GetComponent<RectTransform>();
 
-        CrearTexto("Titulo", card, "Pausa", 46f, new Vector2(0f, 150f), new Vector2(460f, 64f));
-        botonContinuar = CrearBoton("BotonContinuar", card, "Continuar", new Vector2(0f, 72f), new Vector2(260f, 54f));
-        botonAjustes = CrearBoton("BotonAjustes", card, "Ajustes", new Vector2(0f, 4f), new Vector2(260f, 54f));
-        botonReiniciar = CrearBoton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -64f), new Vector2(260f, 54f));
-        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -132f), new Vector2(260f, 54f));
+        CrearTexto("Titulo", card, "Pausa", 46f, new Vector2(0f, 182f), new Vector2(460f, 64f));
+        botonContinuar = CrearBoton("BotonContinuar", card, "Continuar", new Vector2(0f, 102f), new Vector2(260f, 54f));
+        botonAjustes = CrearBoton("BotonAjustes", card, "Ajustes", new Vector2(0f, 34f), new Vector2(260f, 54f));
+        botonControles = CrearBoton("BotonControles", card, "Controles", new Vector2(0f, -34f), new Vector2(260f, 54f));
+        botonReiniciar = CrearBoton("BotonReiniciar", card, "Reiniciar", new Vector2(0f, -102f), new Vector2(260f, 54f));
+        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -170f), new Vector2(260f, 54f));
 
         GameObject settingsGO = CrearCard("SettingsCard", overlay, new Vector2(520f, 380f));
         RectTransform settingsCard = settingsGO.GetComponent<RectTransform>();
@@ -310,6 +363,8 @@ public class PauseMenuScreen : MonoBehaviour
         toggleSilencio = CrearToggle("ToggleSilencio", settingsCard, "Silenciar audio", new Vector2(0f, -56f), new Vector2(300f, 42f));
         botonVolverAjustes = CrearBoton("BotonVolver", settingsCard, "Volver", new Vector2(0f, -128f), new Vector2(220f, 54f));
         settingsGO.SetActive(false);
+
+        panelControles = ControlsHelpPanelFactory.CrearPanelControles("ControlsCard", overlay, new Vector2(760f, 440f), out botonVolverControles);
 
         panelPausa = overlayGO;
         menuPrincipal = cardGO;
@@ -325,9 +380,11 @@ public class PauseMenuScreen : MonoBehaviour
     {
         ConfigurarBoton(botonContinuar, Ocultar);
         ConfigurarBoton(botonAjustes, MostrarAjustes);
+        ConfigurarBoton(botonControles, MostrarControles);
         ConfigurarBoton(botonReiniciar, ReiniciarNivel);
         ConfigurarBoton(botonMenuPrincipal, CargarMenuPrincipal);
         ConfigurarBoton(botonVolverAjustes, MostrarMenuPrincipal);
+        ConfigurarBoton(botonVolverControles, MostrarMenuPrincipal);
     }
 
     private void AsegurarBotonMenuPrincipal()
@@ -349,13 +406,61 @@ public class PauseMenuScreen : MonoBehaviour
 
         if(cardRect != null)
         {
-            cardRect.sizeDelta = new Vector2(520f, 430f);
+            cardRect.sizeDelta = new Vector2(520f, 500f);
         }
 
-        ReubicarBoton(botonContinuar, new Vector2(0f, 72f));
-        ReubicarBoton(botonAjustes, new Vector2(0f, 4f));
-        ReubicarBoton(botonReiniciar, new Vector2(0f, -64f));
-        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -132f), new Vector2(260f, 54f));
+        ReubicarBoton(botonContinuar, new Vector2(0f, 102f));
+        ReubicarBoton(botonAjustes, new Vector2(0f, 34f));
+        ReubicarBoton(botonControles, new Vector2(0f, -34f));
+        ReubicarBoton(botonReiniciar, new Vector2(0f, -102f));
+        botonMenuPrincipal = CrearBoton("BotonMenuPrincipal", card, "Salir al menu", new Vector2(0f, -170f), new Vector2(260f, 54f));
+    }
+
+    private void AsegurarPanelControles()
+    {
+        if(panelControles != null || panelPausa == null)
+        {
+            return;
+        }
+
+        Transform overlay = transform.Find(OverlayPath);
+
+        if(overlay == null)
+        {
+            return;
+        }
+
+        panelControles = ControlsHelpPanelFactory.CrearPanelControles("ControlsCard", overlay, new Vector2(760f, 440f), out botonVolverControles);
+    }
+
+    private void AsegurarBotonControles()
+    {
+        Transform card = transform.Find(CardPath);
+
+        if(card == null)
+        {
+            return;
+        }
+
+        if(botonControles == null)
+        {
+            RectTransform cardRect = card.GetComponent<RectTransform>();
+
+            if(cardRect != null)
+            {
+                cardRect.sizeDelta = new Vector2(520f, 500f);
+            }
+
+            ReubicarBoton(botonContinuar, new Vector2(0f, 102f));
+            ReubicarBoton(botonAjustes, new Vector2(0f, 34f));
+            ReubicarBoton(botonReiniciar, new Vector2(0f, -102f));
+            ReubicarBoton(botonMenuPrincipal, new Vector2(0f, -170f));
+            botonControles = CrearBoton("BotonControles", card, "Controles", new Vector2(0f, -34f), new Vector2(260f, 54f));
+        }
+        else
+        {
+            ActualizarTextoBoton(botonControles, "Controles");
+        }
     }
 
     private static void ReubicarBoton(Button boton, Vector2 posicion)
@@ -428,6 +533,11 @@ public class PauseMenuScreen : MonoBehaviour
         if(panelAjustes != null)
         {
             panelAjustes.SetActive(false);
+        }
+
+        if(panelControles != null)
+        {
+            panelControles.SetActive(false);
         }
 
         if(menuPrincipal != null)

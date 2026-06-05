@@ -21,6 +21,9 @@ public class PlayerAttackHitbox : MonoBehaviour
     // Evita golpear varias veces al mismo collider durante un mismo golpe.
     private readonly HashSet<Collider2D> collidersGolpeados = new HashSet<Collider2D>();
 
+    // Evita buscar componentes repetidamente mientras el hitbox esta tocando el mismo objetivo.
+    private readonly Dictionary<Collider2D, IDamageable> damageablesPorCollider = new Dictionary<Collider2D, IDamageable>();
+
     // Dano del golpe que esta activo ahora.
     private int danoActual;
 
@@ -56,6 +59,7 @@ public class PlayerAttackHitbox : MonoBehaviour
 
         hitbox.enabled = false;
         collidersGolpeados.Clear();
+        damageablesPorCollider.Clear();
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -137,17 +141,20 @@ public class PlayerAttackHitbox : MonoBehaviour
 
     private IDamageable BuscarDamageable(Collider2D objetivo)
     {
-        MonoBehaviour[] componentes = objetivo.GetComponentsInParent<MonoBehaviour>();
-
-        foreach(MonoBehaviour componente in componentes)
+        if(objetivo == null)
         {
-            if(componente is IDamageable damageable)
-            {
-                return damageable;
-            }
+            return null;
         }
 
-        return null;
+        if(damageablesPorCollider.TryGetValue(objetivo, out IDamageable damageableCacheado))
+        {
+            return damageableCacheado;
+        }
+
+        IDamageable damageable = objetivo.GetComponentInParent<IDamageable>();
+        damageablesPorCollider[objetivo] = damageable;
+
+        return damageable;
     }
 
     void OnDrawGizmosSelected()

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Dano simple por contacto para probar Hit y Death del Player.
@@ -10,6 +11,7 @@ public class EnemyContactDamage : MonoBehaviour
     [SerializeField] private float duracionVeneno = 5f;
 
     private float contadorCooldown;
+    private readonly Dictionary<Collider2D, IDamageable> damageablesPorCollider = new Dictionary<Collider2D, IDamageable>();
 
     void Update()
     {
@@ -27,6 +29,11 @@ public class EnemyContactDamage : MonoBehaviour
     void OnCollisionStay2D(Collision2D collision)
     {
         IntentarDanar(collision.collider);
+    }
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        damageablesPorCollider.Remove(collision.collider);
     }
 
     private void IntentarDanar(Collider2D other)
@@ -65,16 +72,19 @@ public class EnemyContactDamage : MonoBehaviour
 
     private IDamageable BuscarDamageable(Collider2D objetivo)
     {
-        MonoBehaviour[] componentes = objetivo.GetComponentsInParent<MonoBehaviour>();
-
-        foreach(MonoBehaviour componente in componentes)
+        if(objetivo == null)
         {
-            if(componente is IDamageable damageable)
-            {
-                return damageable;
-            }
+            return null;
         }
 
-        return null;
+        if(damageablesPorCollider.TryGetValue(objetivo, out IDamageable damageableCacheado))
+        {
+            return damageableCacheado;
+        }
+
+        IDamageable damageable = objetivo.GetComponentInParent<IDamageable>();
+        damageablesPorCollider[objetivo] = damageable;
+
+        return damageable;
     }
 }
