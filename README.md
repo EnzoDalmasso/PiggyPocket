@@ -1,80 +1,80 @@
 # PiggyPocket
 
-PiggyPocket es un mini platformer 2D hecho en Unity. El objetivo es recorrer un nivel corto, juntar monedas, romper barriles, evitar enemigos y trampas, y llegar a la meta final.
+PiggyPocket is a 2D mini-platformer made in Unity. The goal is to traverse a short level, collect coins, break barrels, avoid enemies and traps, and reach the final goal.
 
-El proyecto esta pensado como prototipo de portfolio, con foco en gameplay simple, arquitectura ordenada y soporte para WebGL y Android.
+The project is designed as a portfolio prototype, focusing on simple gameplay, clean architecture, and support for WebGL and Android.
 
 ## Gameplay
 
-- Movimiento lateral, salto y coyote time.
-- Ataque cuerpo a cuerpo con combo de dos golpes.
-- Sistema de vida, danio, knockback, hit, injured, poison y death.
-- Enemigo base reutilizable, actualmente aplicado a una oruga.
-- Danio por contacto, pisoton sobre enemigos y feedback visual al recibir golpes.
-- Monedas bronze y gold con valores distintos.
-- Barriles rompibles con drops: vida, monedas, bomba o veneno.
-- Trampas de pinchos pintables con Tile Palette.
-- HUD con vida, monedas, pausa, ajustes, ayuda de controles, victoria y game over.
-- Controles para teclado, mouse y mobile touch.
-- Musica, efectos de sonido y VFX al recolectar monedas.
+- Lateral movement, jumping, and coyote time.
+- Melee attack with a two-hit combo.
+- Health, damage, knockback, hit, injured, poison, and death systems.
+- Reusable base enemy, currently applied to a caterpillar.
+- Contact damage, stomping on enemies, and visual feedback when taking hits.
+- Bronze and gold coins with different values.
+- Breakable barrels with drops: health, coins, a bomb, or poison.
+- Spike traps paintable with Tile Palette.
+- HUD with health, coins, pause, settings, controls help, victory, and game over screens.
+- Controls for keyboard, mouse, and mobile touch.
+- Music, sound effects, and VFX when collecting coins.
 
-## Arquitectura
+## Architecture
 
-El proyecto separa responsabilidades en scripts chicos y reutilizables:
+The project separates responsibilities into small, reusable scripts:
 
-- `Player`: input, movimiento, ataque, animaciones, vida, estado y wallet.
-- `Enemigos`: enemigo base, movimiento por patrulla, danio por contacto, pisoton y animaciones.
-- `Collectibles`: monedas y vida.
-- `Breakables`: objetos rompibles y sistema de drops.
-- `Hazards`: trampas y efectos de area.
-- `UI`: HUD, pausa, ajustes, victoria, derrota, menu principal y controles mobile.
-- `Audio`: manager centralizado para musica y SFX.
-- `Level`: meta final, camara y parallax.
+- `Player`: input, movement, attack, animations, health, state, and wallet.
+- `Enemies`: base enemy, patrol movement, contact damage, stomping, and animations.
+- `Collectibles`: coins and health.
+- `Breakables`: breakable objects and drop system.
+- `Hazards`: traps and area-of-effect.
+- `UI`: HUD, pause, settings, victory, defeat, main menu, and mobile controls.
+- `Audio`: centralized manager for music and SFX.
+- `Level`: final goal, camera, and parallax.
 
-## Controles
+## Controls
 
 ### PC / Web
 
-- `A / D` o flechas: mover.
-- `Space`: saltar.
-- `J` o click: atacar.
-- `Esc` o `P`: pausa.
+- `A / D` or Arrow Keys: Move.
+- `Space`: Jump.
+- `J` or Left Click: Attack.
+- `Esc` or `P`: Pause.
 
 ### Mobile
 
-- Botones tactiles para izquierda, derecha, salto, ataque y pausa.
+- Touch buttons for left, right, jump, attack, and pause.
 
-## Escenas
+## Scenes
 
-Las escenas principales incluidas en Build Settings son:
+The main scenes included in the Build Settings are:
 
 - `Assets/Scenes/MainMenu.unity`
 - `Assets/Scenes/LevelComplete.unity`
 
-## Requisitos
+## Requirements
 
-- Unity `6000.3.5f2` o compatible.
-- Modulos recomendados:
-  - Android Build Support para build mobile.
-  - WebGL Build Support para build web.
+- Unity `6000.3.5f2` or compatible.
+- Recommended modules:
+  - Android Build Support for mobile builds.
+  - WebGL Build Support for web builds.
 
-## Como Ejecutarlo
+## How to Run
 
-1. Clonar el repositorio.
-2. Abrir el proyecto desde Unity Hub.
-3. Abrir `Assets/Scenes/MainMenu.unity`.
-4. Presionar Play.
+1. Clone the repository.
+2. Open the project via Unity Hub.
+3. Open `Assets/Scenes/MainMenu.unity`.
+4. Press Play.
 
 ## Build
 
 ### Android
 
-1. Ir a `File > Build Profiles`.
-2. Seleccionar `Android`.
-3. Usar `Switch Platform`.
-4. Generar APK con `Build` o instalar directo con `Build And Run`.
+1. Go to `File > Build Profiles`.
+2. Select `Android`.
+3. Click `Switch Platform`.
+4. Generate the APK with `Build` or deploy directly with `Build And Run`.
 
-Configuracion actual:
+Current configuration:
 
 - Product Name: `PiggyPocket`
 - Company Name: `EnzoDev`
@@ -83,36 +83,36 @@ Configuracion actual:
 
 ### WebGL
 
-1. Ir a `File > Build Profiles`.
-2. Seleccionar `WebGL`.
-3. Usar `Switch Platform`.
-4. Generar la build.
+1. Go to `File > Build Profiles`.
+2. Select `WebGL`.
+3. Click `Switch Platform`.
+4. Generate the build.
 
-## Estado Del Proyecto
+## Project Status
 
-Prototipo jugable del primer nivel. Queda abierto para seguir puliendo:
+Playable prototype of the first level. Open for further polishing:
 
-- Disenio visual final de menus.
-- Mas niveles.
-- Mas enemigos.
-- Mejor balance de dificultad.
-- Publicacion WebGL / Android.
+- Final visual design for menus.
+- More levels.
+- More enemies.
+- Better difficulty balancing.
+- WebGL / Android deployment.
 
-## Creditos
+## Credits
 
-Assets utilizados:
+Assets used:
 
-- Player, enemigos, barriles, vida, monedas, vegetacion y tileset:  
+- Player, enemies, barrels, health, coins, vegetation, and tileset:  
   https://crusenho.itch.io/beriesadventureseaside
 
 - UI:  
   https://cga-creative-game-assets.itch.io/gold-2d-mobile-ui-for-casual-game
 
-- Controles mobile:  
+- Mobile controls:  
   https://opengameart.org/content/mobile-controls
 
-Musica y efectos de sonido agregados para el prototipo.
+Music and sound effects added for the prototype.
 
-## Autor
+## Author
 
-Desarrollado por Enzo como proyecto de portfolio en Unity.
+Developed by Enzo as a Unity portfolio project.
