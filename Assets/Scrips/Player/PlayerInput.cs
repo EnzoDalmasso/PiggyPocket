@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 // Este script solo se encarga de leer los controles del jugador.
 // No mueve al personaje: otros scripts usan estos valores para decidir que hacer.
@@ -19,9 +20,39 @@ public class PlayerInput : MonoBehaviour
         // El input se lee en Update porque depende de cada frame del juego.
         float movimientoTeclado = Input.GetAxisRaw("Horizontal");
         float movimientoMobile = MobileInputState.MovimientoHorizontal;
+        bool saltoMobile = MobileInputState.ConsumirSalto();
+        bool ataqueMobile = MobileInputState.ConsumirAtaque();
 
         MovimientoHorizontal = Mathf.Clamp(movimientoTeclado + movimientoMobile, -1f, 1f);
-        SaltoPresionado = Input.GetButtonDown("Jump") || MobileInputState.ConsumirSalto();
-        AtaquePresionado = Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.J) || MobileInputState.ConsumirAtaque();
+        SaltoPresionado = Input.GetButtonDown("Jump") || saltoMobile;
+        AtaquePresionado = ataqueMobile || Input.GetKeyDown(KeyCode.J) || ClickAtaquePresionado();
+    }
+
+    private bool ClickAtaquePresionado()
+    {
+        if(!Input.GetButtonDown("Fire1"))
+        {
+            return false;
+        }
+
+        return !HayPunteroSobreUI();
+    }
+
+    private bool HayPunteroSobreUI()
+    {
+        if(EventSystem.current == null)
+        {
+            return false;
+        }
+
+        for(int i = 0; i < Input.touchCount; i++)
+        {
+            if(EventSystem.current.IsPointerOverGameObject(Input.GetTouch(i).fingerId))
+            {
+                return true;
+            }
+        }
+
+        return EventSystem.current.IsPointerOverGameObject();
     }
 }
