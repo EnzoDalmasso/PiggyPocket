@@ -43,6 +43,11 @@ public class MobileInputButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        if(presionado)
+        {
+            return;
+        }
+
         presionado = true;
         pointerId = eventData.pointerId;
         MobileInputState.Presionar(accion);
